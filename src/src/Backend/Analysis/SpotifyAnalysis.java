@@ -2,7 +2,7 @@ package Backend.Analysis;
 
 /**
  * @author Ethan Carnahan
- * The sound analysis of a song given by Spotify.
+ * The sound analysis of a song given by Spotify's "Audio Features".
  * See <a href="https://developer.spotify.com/documentation/web-api/reference/get-audio-features">Spotify API</a>
  */
 public class SpotifyAnalysis implements SoundAnalysis {
