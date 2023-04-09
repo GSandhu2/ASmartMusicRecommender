@@ -2,9 +2,7 @@ package Backend.Spotify;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -18,17 +16,25 @@ import java.util.Base64;
  * See tutorials: <a href="https://developer.spotify.com/documentation/web-api/tutorials/code-flow">General Flow</a>, <a href="https://developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow">PKCE Flow</a>
  */
 public class SpotifyAuth {
-    //region Fields and public methods
+    //region Fields and AccessCode
     private static final String CLIENT_ID = "7449838d0e614661b59e4778c51e31ae";
     private static final String REDIRECT_URI = "http://localhost:1234/auth";
     private static final int REDIRECT_PORT = 1234;
-    private final AccessCode accessCode;
+    private AccessCode accessCode;
 
     // Spotify access code with expiration data and refresh token.
     // Rest of program only needs "code".
     private static class AccessCode {
-        public final String code, type, refresh;
-        public final LocalDateTime expiration;
+        private final String code, type, refresh;
+        private final LocalDateTime expiration;
+
+        // Used for ReadAccessCode().
+        private AccessCode(String code, String type, String refresh, LocalDateTime expiration) {
+            this.code = code;
+            this.type = type;
+            this.refresh = refresh;
+            this.expiration = expiration;
+        }
 
         // Creates AccessCode object from the json data sent by Spotify.
         private AccessCode(String jsonLine) {
@@ -53,9 +59,58 @@ public class SpotifyAuth {
             expiration = LocalDateTime.now().plusSeconds(Integer.parseInt(expirationString));
             System.out.println("SpotifyAuth: Expiration Time = " + expiration);
         }
+
+        // Writes this access code to the directory.
+        private void WriteAccessCode(String directory) throws IOException {
+            System.out.println("SpotifyAuth: Saving access code to " + directory + "\\SpotifyAccessCode");
+            FileWriter writer = new FileWriter(directory + "\\SpotifyAccessCode", false);
+            writer.write(code + "\n" + type + "\n" + refresh + "\n" + expiration + "\n");
+            writer.flush();
+            writer.close();
+        }
+
+        // Reads the access code from this directory.
+        private static AccessCode ReadAccessCode(String directory) throws IOException {
+            System.out.println("SpotifyAuth: Loading access code from " + directory + "\\SpotifyAccessCode");
+            BufferedReader reader = new BufferedReader(new FileReader(directory + "\\SpotifyAccessCode"));
+            String code = reader.readLine();
+            String type = reader.readLine();
+            String refresh = reader.readLine();
+            LocalDateTime expiration = LocalDateTime.parse(reader.readLine());
+            return new AccessCode(code, type, refresh, expiration);
+        }
+    }
+    //endregion
+
+    //region Public methods
+    public SpotifyAuth() {
+        accessCode = null;
     }
 
-    public SpotifyAuth() {
+    /**
+     * Todo: Refresh expired token instead of getting new one.
+     * @return A valid access code to put in the "Authorization" header of Spotify API requests.
+     */
+    public String getAccessCode() {
+        // Load AccessCode from local storage.
+        if (accessCode == null || LocalDateTime.now().isAfter(accessCode.expiration)) {
+            try { accessCode = AccessCode.ReadAccessCode(System.getProperty("user.dir")); }
+            catch (IOException e) {
+                // Request and save new AccessCode if there isn't one.
+                System.out.println("SpotifyAuth: Failed to load access code - " + e.getMessage());
+                System.out.println("SpotifyAuth: Getting new access code");
+                accessCode = getNewAccessCode();
+                try { accessCode.WriteAccessCode(System.getProperty("user.dir")); }
+                catch (IOException e2) { System.out.println("SpotifyAuth: Failed to save new access code - " + e2.getMessage()); }
+            }
+        }
+
+        return accessCode.type + " " + accessCode.code;
+    }
+    //endregion
+
+    //region Get first access token.
+    private static AccessCode getNewAccessCode() {
         String codeVerifier = generateCodeVerifier(); // Also used as "state".
         System.out.println("SpotifyAuth: codeVerifier = " + codeVerifier);
         String codeChallenge = generateCodeChallenge(codeVerifier);
@@ -63,26 +118,13 @@ public class SpotifyAuth {
         openAuthorizationTab(codeVerifier, codeChallenge);
         String authorizationCode = getAuthorizationCode(codeVerifier);
         System.out.println("SpotifyAuth: authorizationCode = " + authorizationCode);
-        accessCode = getAccessCode(codeVerifier, authorizationCode);
+        return getAccessCode(codeVerifier, authorizationCode);
     }
 
-    /**
-     * Todo: 1. Get new access code if we don't have one (right now "new SpotifyAuth()" does this).
-     * Todo: 2. Save/load access code to local storage.
-     * Todo: 3. Refresh access code if it's expired.
-     * @return A valid access code to put in the "Authorization" header of Spotify API requests.
-     */
-    public String getAccessCode() {
-        return accessCode.type + " " + accessCode.code;
-    }
-    //endregion
-
-    //region Get first access token.
     private static String generateCodeVerifier() {
+        // Randomly generate string.
         StringBuilder result = new StringBuilder();
         String possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-        // Randomly generate string.
         for (int i = 0; i < 64; i++)
             result.append(possible.charAt((int)Math.floor(Math.random() * possible.length())));
 
@@ -104,7 +146,7 @@ public class SpotifyAuth {
 
     // Opens the Spotify webpage asking users to authorize ASMR to access Spotify.
     private static void openAuthorizationTab(String codeVerifier, String codeChallenge) {
-        // Build URL.
+        // Build URI.
         StringBuilder url = new StringBuilder("https://accounts.spotify.com/authorize?");
         url.append("client_id="); url.append(CLIENT_ID); url.append("&");
         url.append("response_type=code&");
@@ -215,7 +257,7 @@ public class SpotifyAuth {
     }
     //endregion
 
-    //region To implement: check for expiration and refresh access token.
+    //region Todo: Refresh access token.
     //endregion
 
     // Test getting access token.
