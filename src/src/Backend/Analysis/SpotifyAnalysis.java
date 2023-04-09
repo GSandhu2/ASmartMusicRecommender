@@ -1,5 +1,9 @@
 package Backend.Analysis;
 
+import Backend.Spotify.SpotifyAPI;
+
+import java.text.DecimalFormat;
+
 /**
  * @author Ethan Carnahan
  * The sound analysis of a song given by Spotify's "Audio Features".
@@ -9,20 +13,20 @@ public class SpotifyAnalysis implements SoundAnalysis {
 
     //region Fields, Constants, Constructor
     // 0.0-1.0 Values
-    private final float acousticness, danceability, energy, instrumentalness, liveness, speechiness, valence;
+    private final double acousticness, danceability, energy, instrumentalness, liveness, speechiness, valence;
     // > 1.0 Values
-    private final float loudness, tempo;
+    private final double loudness, tempo;
     // Integer Values.
     private final int duration_ms, key, mode, time_signature;
 
     // Maximum difference = 1.0 * number of analysis values.
     private static final double MAX_DIFFERENCE = 13.0;
     // Exponentially adjusts the value of individual differences less than 1.0.
-    private static final double DIFFERENCE_EXPONENT = 2.0;
+    private static final double DIFFERENCE_EXPONENT = 0.5;
     // Multiplies arctan bounds from pi/2 to 1.
     private static final double ARCTAN_MULTIPLIER = 2.0 / Math.PI;
 
-    public SpotifyAnalysis(float acousticness, float danceability, float energy, float instrumentalness, float liveness, float speechiness, float valence, float loudness, float tempo, int duration_ms, int key, int mode, int time_signature) {
+    public SpotifyAnalysis(double acousticness, double danceability, double energy, double instrumentalness, double liveness, double speechiness, double valence, double loudness, double tempo, int duration_ms, int key, int mode, int time_signature) {
         this.acousticness = acousticness;
         this.danceability = danceability;
         this.energy = energy;
@@ -48,14 +52,13 @@ public class SpotifyAnalysis implements SoundAnalysis {
         double difference = 0.0;
 
         // 0.0-1.0 Values: Just subtract to get a value between 0.0-1.0.
-        difference +=
-                Math.pow(Math.abs(otherSpotify.acousticness - this.acousticness), DIFFERENCE_EXPONENT) +
-                Math.pow(Math.abs(otherSpotify.danceability - this.danceability), DIFFERENCE_EXPONENT) +
-                Math.pow(Math.abs(otherSpotify.energy - this.energy), DIFFERENCE_EXPONENT) +
-                Math.pow(Math.abs(otherSpotify.instrumentalness - this.instrumentalness), DIFFERENCE_EXPONENT) +
-                Math.pow(Math.abs(otherSpotify.liveness - this.liveness), DIFFERENCE_EXPONENT) +
-                Math.pow(Math.abs(otherSpotify.speechiness - this.speechiness), DIFFERENCE_EXPONENT) +
-                Math.pow(Math.abs(otherSpotify.valence - this.valence), DIFFERENCE_EXPONENT);
+        difference += Math.pow(Math.abs(otherSpotify.acousticness - this.acousticness), DIFFERENCE_EXPONENT);
+        difference += Math.pow(Math.abs(otherSpotify.danceability - this.danceability), DIFFERENCE_EXPONENT);
+        difference += Math.pow(Math.abs(otherSpotify.energy - this.energy), DIFFERENCE_EXPONENT);
+        difference += Math.pow(Math.abs(otherSpotify.instrumentalness - this.instrumentalness), DIFFERENCE_EXPONENT);
+        difference += Math.pow(Math.abs(otherSpotify.liveness - this.liveness), DIFFERENCE_EXPONENT);
+        difference += Math.pow(Math.abs(otherSpotify.speechiness - this.speechiness), DIFFERENCE_EXPONENT);
+        difference += Math.pow(Math.abs(otherSpotify.valence - this.valence), DIFFERENCE_EXPONENT);
 
         // > 1.0 Values: Use arctan(difference or ratio) to clamp value between 0.0-1.0.
         // If this.tempo is somehow zero, assume tempos are very different.
@@ -63,7 +66,7 @@ public class SpotifyAnalysis implements SoundAnalysis {
         if (this.tempo == 0.0)
             difference += 1.0;
         else
-            difference += Math.pow(ARCTAN_MULTIPLIER * Math.atan(Math.abs(otherSpotify.tempo / (this.tempo == 0.0 ? 1.0 : this.tempo))), DIFFERENCE_EXPONENT);
+            difference += Math.pow(ARCTAN_MULTIPLIER * Math.atan(Math.abs(1 - (otherSpotify.tempo / this.tempo))), DIFFERENCE_EXPONENT);
 
         // Integer Values: Calculate 0.0-1.0 difference with separate methods.
         difference += Math.pow(compareDuration(otherSpotify.duration_ms, this.duration_ms), DIFFERENCE_EXPONENT);
@@ -80,7 +83,7 @@ public class SpotifyAnalysis implements SoundAnalysis {
     // Use same method as > 1.0 values but for integers.
     // Surely durations won't be zero.
     private static double compareDuration(int otherDuration, int thisDuration) {
-        return ARCTAN_MULTIPLIER * Math.atan(Math.atan((double) otherDuration / thisDuration));
+        return ARCTAN_MULTIPLIER * Math.atan(Math.abs(1.0 - ((double) otherDuration / thisDuration)));
     }
 
     // Musical notes are circular, so 0/11 (C, B) are closer than 0/6 (C, F#).
@@ -104,4 +107,16 @@ public class SpotifyAnalysis implements SoundAnalysis {
         return otherTimeSignature == thisTimeSignature ? 0.0 : 1.0;
     }
     //endregion
+
+    // Tests comparing two specified Spotify songs.
+    // Songs are Jungle from Terraria and This Future by Camellia.
+    public static void main(String[] args) {
+        SpotifyAnalysis song1 = SpotifyAPI.getTrackFeatures("5KTKq3BrXttaTT7P0RQbQF");
+        SpotifyAnalysis song2 = SpotifyAPI.getTrackFeatures("7wSmFJYz8qot1NTqNMYJKK");
+        DecimalFormat format = new DecimalFormat("0.00%");
+        // Should be less than 1.0
+        System.out.println("SpotifyAnalysis: Test different-song similarity = " + format.format(song1.compareTo(song2)));
+        // Should be equal to 1.0
+        System.out.println("SpotifyAnalysis: Test same-song similarity = " + format.format(song1.compareTo(song1)));
+    }
 }

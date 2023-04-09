@@ -70,10 +70,10 @@ public class SpotifyAuth {
      * Todo: 1. Get new access code if we don't have one (right now "new SpotifyAuth()" does this).
      * Todo: 2. Save/load access code to local storage.
      * Todo: 3. Refresh access code if it's expired.
-     * @return A valid access code for making Spotify API calls.
+     * @return A valid access code to put in the "Authorization" header of Spotify API requests.
      */
     public String getAccessCode() {
-        return accessCode.code;
+        return accessCode.type + " " + accessCode.code;
     }
     //endregion
 
