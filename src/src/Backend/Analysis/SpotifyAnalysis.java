@@ -61,12 +61,12 @@ public class SpotifyAnalysis implements SoundAnalysis {
         difference += Math.pow(Math.abs(otherSpotify.valence - this.valence), DIFFERENCE_EXPONENT);
 
         // > 1.0 Values: Use arctan(difference or ratio) to clamp value between 0.0-1.0.
-        // If this.tempo is somehow zero, assume tempos are very different.
+        // If tempos are somehow zero, assume they are very different.
         difference += Math.pow(ARCTAN_MULTIPLIER * Math.atan(Math.abs(otherSpotify.loudness - this.loudness)), DIFFERENCE_EXPONENT);
-        if (this.tempo == 0.0)
+        if (this.tempo == 0.0 || otherSpotify.tempo == 0.0)
             difference += 1.0;
         else
-            difference += Math.pow(ARCTAN_MULTIPLIER * Math.atan(Math.abs(1 - (otherSpotify.tempo / this.tempo))), DIFFERENCE_EXPONENT);
+            difference += Math.pow(ARCTAN_MULTIPLIER * Math.atan(-1 + (Math.max(otherSpotify.tempo, this.tempo) / Math.min(otherSpotify.tempo, this.tempo))), DIFFERENCE_EXPONENT);
 
         // Integer Values: Calculate 0.0-1.0 difference with separate methods.
         difference += Math.pow(compareDuration(otherSpotify.duration_ms, this.duration_ms), DIFFERENCE_EXPONENT);
@@ -83,7 +83,7 @@ public class SpotifyAnalysis implements SoundAnalysis {
     // Use same method as > 1.0 values but for integers.
     // Surely durations won't be zero.
     private static double compareDuration(int otherDuration, int thisDuration) {
-        return ARCTAN_MULTIPLIER * Math.atan(Math.abs(1.0 - ((double) otherDuration / thisDuration)));
+        return ARCTAN_MULTIPLIER * Math.atan(Math.abs(1.0 - ((double) Math.max(otherDuration, thisDuration) / Math.min(otherDuration, thisDuration))));
     }
 
     // Musical notes are circular, so 0/11 (C, B) are closer than 0/6 (C, F#).
@@ -108,15 +108,50 @@ public class SpotifyAnalysis implements SoundAnalysis {
     }
     //endregion
 
-    // Tests comparing two specified Spotify songs.
-    // Songs are Jungle from Terraria and This Future by Camellia.
+    // Tests comparing specified Spotify songs.
+    // Songs:
+    // Jungle from Terraria: 5KTKq3BrXttaTT7P0RQbQF
+    // Long-Lost Chapters from Genshin Impact: 1DMWlAyeAcwzIRsHIq1eT5
+    // The Oathkeeper by Lizz Robinett: 7mdmGuGhme4qcx6xZNrWmZ
+    // Cherry Blossom Drops by SOOOO: 17lrs2l9qXEuFybi7hSsid
+    // This Future by Camellia: 7wSmFJYz8qot1NTqNMYJKK
+    // Aegleseeker by Silentroom: 6I7Nu1gsf0NhkzYlyfHa7q
     public static void main(String[] args) {
-        SpotifyAnalysis song1 = SpotifyAPI.getTrackFeatures("5KTKq3BrXttaTT7P0RQbQF");
-        SpotifyAnalysis song2 = SpotifyAPI.getTrackFeatures("7wSmFJYz8qot1NTqNMYJKK");
+        // Load track features.
+        SpotifyAnalysis[] songs = new SpotifyAnalysis[6];
+        double[][] comparisons = new double[songs.length][songs.length];
+        songs[0] = SpotifyAPI.getTrackFeatures("5KTKq3BrXttaTT7P0RQbQF");
+        songs[1] = SpotifyAPI.getTrackFeatures("1DMWlAyeAcwzIRsHIq1eT5");
+        songs[2] = SpotifyAPI.getTrackFeatures("7mdmGuGhme4qcx6xZNrWmZ");
+        songs[3] = SpotifyAPI.getTrackFeatures("17lrs2l9qXEuFybi7hSsid");
+        songs[4] = SpotifyAPI.getTrackFeatures("7wSmFJYz8qot1NTqNMYJKK");
+        songs[5] = SpotifyAPI.getTrackFeatures("6I7Nu1gsf0NhkzYlyfHa7q");
+
+        // Make comparisons.
         DecimalFormat format = new DecimalFormat("0.00%");
-        // Should be less than 1.0
-        System.out.println("SpotifyAnalysis: Test different-song similarity = " + format.format(song1.compareTo(song2)));
-        // Should be equal to 1.0
-        System.out.println("SpotifyAnalysis: Test same-song similarity = " + format.format(song1.compareTo(song1)));
+        for(int i = 0; i < songs.length; i++)
+            for (int j = 0; j < songs.length; j++)
+                comparisons[i][j] = songs[i].compareTo(songs[j]);
+
+        // Find closest/furthest matches between different songs.
+        int maxSong1 = 0, maxSong2 = 0;
+        int minSong1 = 0, minSong2 = 0;
+        double max = 0.0, min = 1.0;
+        for (int i = 0; i < songs.length; i++) {
+            for (int j = 0; j < songs.length; j++) {
+                if (i != j && comparisons[i][j] > max) {
+                    max = comparisons[i][j];
+                    maxSong1 = i; maxSong2 = j;
+                }
+                if (comparisons[i][j] < min) {
+                    min = comparisons[i][j];
+                    minSong1 = i; minSong2 = j;
+                }
+            }
+        }
+        System.out.println("SpotifyAnalysis: Closest song similarity is between songs " +
+                maxSong1 + " and " + maxSong2 + " = " + format.format(max));
+        System.out.println("SpotifyAnalysis: Furthest song similarity is between songs " +
+                minSong1 + " and " + minSong2 + " = " + format.format(min));
     }
 }
