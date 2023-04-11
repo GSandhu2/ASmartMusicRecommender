@@ -93,7 +93,7 @@ public class SpotifyAuth {
      */
     public String getAccessCode() {
         // Load AccessCode from local storage.
-        if (accessCode == null || LocalDateTime.now().isAfter(accessCode.expiration)) {
+        if (accessCode == null) {
             try { accessCode = AccessCode.ReadAccessCode(System.getProperty("user.dir")); }
             catch (IOException e) {
                 // Request and save new AccessCode if there isn't one.
@@ -103,6 +103,14 @@ public class SpotifyAuth {
                 try { accessCode.WriteAccessCode(System.getProperty("user.dir")); }
                 catch (IOException e2) { System.out.println("SpotifyAuth: Failed to save new access code - " + e2.getMessage()); }
             }
+        }
+        // Get new access code if it's expired.
+        if (LocalDateTime.now().isAfter(accessCode.expiration)) {
+            System.out.println("SpotifyAuth: Saved access code is expired");
+            System.out.println("SpotifyAuth: Getting new access code");
+            accessCode = getNewAccessCode();
+            try { accessCode.WriteAccessCode(System.getProperty("user.dir")); }
+            catch (IOException e2) { System.out.println("SpotifyAuth: Failed to save new access code - " + e2.getMessage()); }
         }
 
         return accessCode.type + " " + accessCode.code;
