@@ -11,4 +11,5 @@ Code Layout:
     - Spotify - Interact with Spotify API to get their analysis of music, create playlists for user.
     - Helper - Classes that help with miscellaneous functions, like parsing Json and .mp3 files.
 - Frontend
-    - WIP
+    - UI - The visuals of the program.
+    - Control - How the program responds to user input.
