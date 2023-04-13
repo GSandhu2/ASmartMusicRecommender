@@ -73,8 +73,19 @@ public class SpotifyAPI {
     //endregion
 
     //region Json methods
-    // Gets a json String value from a json object.
     // Throws IllegalArgumentException if key doesn't exist in json object.
+
+    // Gets a json value key:{object} from a json object.
+    private static String getJsonObject() {
+        return null;
+    }
+
+    // Gets a json value key:[array] from a json object.
+    private static String[] getJsonArray() {
+        return null;
+    }
+
+    // Gets a json value key:"string" from a json object.
     private static String getJsonString(String jsonObject, String key) {
         int start = jsonObject.indexOf("\"" + key + "\"") + key.length() + 6;
         int end = jsonObject.indexOf(",", start);
@@ -97,10 +108,12 @@ public class SpotifyAPI {
         return jsonObject.substring(start, end);
     }
 
+    // Gets a json value key:integer from a json object.
     private static int getJsonInt(String jsonObject, String key) {
         return Integer.parseInt(getJsonNumber(jsonObject, key));
     }
 
+    // Gets a json value key.double from a json object.
     private static double getJsonDouble(String jsonObject, String key) {
         return Double.parseDouble(getJsonNumber(jsonObject, key));
     }
