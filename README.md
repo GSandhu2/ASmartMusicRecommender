@@ -13,3 +13,7 @@ Code Layout:
 - Frontend
     - UI - The visuals of the program.
     - Control - How the program responds to user input.
+
+To develop: Clone repository and set Java level to 19.
+
+To install: Download asmr.jar file from release.
