@@ -1,6 +1,7 @@
 package Backend.Spotify;
 
 import Backend.Analysis.SpotifyAnalysis;
+import Backend.ParseJson;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
@@ -53,69 +54,22 @@ public class SpotifyAPI {
 
         // Parse response into a SpotifyAnalysis object.
         return new SpotifyAnalysis(
-                getJsonDouble(jsonString, "acousticness"),
-                getJsonDouble(jsonString, "danceability"),
-                getJsonDouble(jsonString, "energy"),
-                getJsonDouble(jsonString, "instrumentalness"),
-                getJsonDouble(jsonString, "liveness"),
-                getJsonDouble(jsonString, "speechiness"),
-                getJsonDouble(jsonString, "valence"),
-                getJsonDouble(jsonString, "loudness"),
-                getJsonDouble(jsonString, "tempo"),
-                getJsonInt(jsonString, "duration_ms"),
-                getJsonInt(jsonString, "key"),
-                getJsonInt(jsonString, "mode"),
-                getJsonInt(jsonString, "time_signature")
+                ParseJson.getDouble(jsonString, "acousticness"),
+                ParseJson.getDouble(jsonString, "danceability"),
+                ParseJson.getDouble(jsonString, "energy"),
+                ParseJson.getDouble(jsonString, "instrumentalness"),
+                ParseJson.getDouble(jsonString, "liveness"),
+                ParseJson.getDouble(jsonString, "speechiness"),
+                ParseJson.getDouble(jsonString, "valence"),
+                ParseJson.getDouble(jsonString, "loudness"),
+                ParseJson.getDouble(jsonString, "tempo"),
+                ParseJson.getInt(jsonString, "duration_ms"),
+                ParseJson.getInt(jsonString, "key"),
+                ParseJson.getInt(jsonString, "mode"),
+                ParseJson.getInt(jsonString, "time_signature")
         );
     }
 
-
     //endregion
 
-    //region Json methods
-    // Throws IllegalArgumentException if key doesn't exist in json object.
-
-    // Gets a json value key:{object} from a json object.
-    private static String getJsonObject() {
-        return null;
-    }
-
-    // Gets a json value key:[array] from a json object.
-    private static String[] getJsonArray() {
-        return null;
-    }
-
-    // Gets a json value key:"string" from a json object.
-    private static String getJsonString(String jsonObject, String key) {
-        int start = jsonObject.indexOf("\"" + key + "\"") + key.length() + 6;
-        int end = jsonObject.indexOf(",", start);
-        if (end == -1) // Key refers to last value in json object.
-            end = jsonObject.length() - 2;
-        if (start == -1)
-            throw new IllegalArgumentException("Spotify API: Json value not found - " + start);
-
-        return jsonObject.substring(start, end);
-    }
-
-    private static String getJsonNumber(String jsonObject, String key) {
-        int start = jsonObject.indexOf("\"" + key + "\"") + key.length() + 5;
-        int end = jsonObject.indexOf(",", start);
-        if (end == -1) // Key refers to last value in json object.
-            end = jsonObject.length() - 1;
-        if (start == -1)
-            throw new IllegalArgumentException("Spotify API: Json value not found - " + start);
-
-        return jsonObject.substring(start, end);
-    }
-
-    // Gets a json value key:integer from a json object.
-    private static int getJsonInt(String jsonObject, String key) {
-        return Integer.parseInt(getJsonNumber(jsonObject, key));
-    }
-
-    // Gets a json value key.double from a json object.
-    private static double getJsonDouble(String jsonObject, String key) {
-        return Double.parseDouble(getJsonNumber(jsonObject, key));
-    }
-    //endregion
 }

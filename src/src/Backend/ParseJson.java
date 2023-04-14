@@ -5,31 +5,106 @@ import java.util.List;
 
 /**
  * Extracts data from Json objects.
+ * Throw IllegalArgumentException on failure.
  */
 public class ParseJson {
+
+    //region Public methods
+
+    // Gets a json value key:{object} from a json object.
+    public static String getObject(String jsonObject, String key) {
+        return getValue(jsonObject, key, "{}");
+    }
+
+    // Gets a json value key:[array] from a json object.
+    public static String[] getArray(String jsonObject, String key) {
+        String array = getValue(jsonObject, key, "[]");
+        List<String> result = new ArrayList<>();
+
+        // Split array into elements.
+        int start = 0;
+        int numBounds = 0;
+        boolean inString = false;
+        for (int i = 0; i < array.length(); i++) {
+            // Found end of element, add to result.
+            if (array.charAt(i) == ',' && numBounds == 0 && !inString) {
+                result.add(array.substring(start, i));
+                start = i + 1;
+            }
+            // Beginning/end of string.
+            else if (array.charAt(i) == '\"')
+                inString = !inString;
+                // Beginning of array/object.
+            else if (array.charAt(i) == '[' || array.charAt(i) == '{')
+                numBounds++;
+                // End of array/object.
+            else if (array.charAt(i) == ']' || array.charAt(i) == '}')
+                numBounds--;
+        }
+        return result.toArray(new String[0]);
+    }
+
+    // Gets a json value key:"string" from a json object.
+    public static String getString(String jsonObject, String key) {
+        return getValue(jsonObject, key, "\"\"");
+    }
+
+    public static boolean getBool(String jsonObject, String key) {
+        String result = getNumber(jsonObject, key);
+        if (result.equals("true") || result.equals("false"))
+            return Boolean.parseBoolean(result);
+        else
+            throw new IllegalArgumentException("ParseJson: Did not find boolean at key " + key);
+    }
+
+    // Gets a json value key:integer from a json object.
+    public static int getInt(String jsonObject, String key) {
+        return Integer.parseInt(getNumber(jsonObject, key));
+    }
+
+    // Gets a json value key.double from a json object.
+    public static double getDouble(String jsonObject, String key) {
+        return Double.parseDouble(getNumber(jsonObject, key));
+    }
+
+    //endregion
+
+    //region Private methods
+
     // "main" method.
     // bounds are "" for strings, [] for arrays, and {} for objects.
-    private static String getJsonValue(String jsonObject, String key, String bounds) {
-        int start = jsonObject.indexOf("\"" + key + "\"") + key.length() + 3;
+    private static String getValue(String jsonObject, String key, String bounds) {
+        int start = jsonObject.indexOf("\"" + key + "\"") + key.length() + 5;
         if (start == -1)
-            throw new IllegalArgumentException("ParseJson: Json value not found - " + start);
-        int end = findEnd(jsonObject, start, bounds);
+            throw new IllegalArgumentException("ParseJson: Json key not found - " + start);
+        int end = findEnd(jsonObject, key, start, bounds);
 
         return jsonObject.substring(start, end);
     }
 
     // Finds the end of a json value.
-    private static int findEnd(String jsonObject, int start, String bounds) {
+    private static int findEnd(String jsonObject, String key, int start, String bounds) {
         // Check types.
-        if (jsonObject.charAt(start) != bounds.charAt(0))
+        if (!bounds.isEmpty() && jsonObject.charAt(start) != bounds.charAt(0))
             throw new IllegalArgumentException("ParseJson: Json type mismatch - " +
                     jsonObject.charAt(start) + " != " + bounds.charAt(0));
 
+        // Find end of number/boolean.
+        int result;
+        if (bounds.isEmpty()) {
+            result = jsonObject.indexOf(",", start + 1);
+            // Value is at end of jsonObject.
+            if (result == -1)
+                return jsonObject.length() - 1;
+            else
+                return result;
+        }
+
         // Find end of string value.
         if (bounds.charAt(1) == '\"') {
-            int result = jsonObject.indexOf("\"", start + 1);
+            result = jsonObject.indexOf("\"", start + 1);
             if (result == -1)
-                throw new IllegalArgumentException("ParseJson: Could not find end of string value.");
+                throw new IllegalArgumentException("ParseJson: Could not find string at key " + key);
             return result;
         }
 
@@ -45,51 +120,13 @@ public class ParseJson {
         }
 
         throw new IllegalArgumentException("ParseJson: Could not find end of " +
-                (bounds.charAt(0) == '[' ? "array" : "object") + " value.");
+                (bounds.charAt(0) == '[' ? "array" : "object") + " at key " + key);
     }
 
-    // Gets a json value key:{object} from a json object.
-    public static String getJsonObject(String jsonObject, String key) {
-        return getJsonValue(jsonObject, key, "{}");
+    private static String getNumber(String jsonObject, String key) {
+        return getValue(jsonObject, key, "");
     }
 
-    // Gets a json value key:[array] from a json object.
-    public static String[] getJsonArray(String jsonObject, String key) {
-        String array = getJsonValue(jsonObject, key, "[]");
-        List<String> result = new ArrayList<>();
+    //endregion
 
-        // Split array into elements.
-        int start = 0, end = 0;
-        int numBounds = 0;
-        boolean inString = false;
-        for (int i = 0; i < array.length(); i++) {
-            // Found end of element.
-            if (array.charAt(i) == ',' && numBounds == 0 && !inString) {
-                result.add(array.substring())
-            }
-        }
-    }
-
-    // Gets a json value key:"string" from a json object.
-    public static String getJsonString(String jsonObject, String key) {
-        return getJsonValue(jsonObject, key, "\"\"");
-    }
-
-    private static String getJsonNumber(String jsonObject, String key) {
-        return getJsonValue(jsonObject, key, "");
-    }
-
-    private static boolean getJsonBool(String jsonObject, String key) {
-        return Boolean.parseBoolean(getJsonNumber(jsonObject, key));
-    }
-
-    // Gets a json value key:integer from a json object.
-    public static int getJsonInt(String jsonObject, String key) {
-        return Integer.parseInt(getJsonNumber(jsonObject, key));
-    }
-
-    // Gets a json value key.double from a json object.
-    public static double getJsonDouble(String jsonObject, String key) {
-        return Double.parseDouble(getJsonNumber(jsonObject, key));
-    }
 }
