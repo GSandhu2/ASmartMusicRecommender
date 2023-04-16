@@ -1,7 +1,7 @@
 package Backend.Spotify;
 
 import Backend.Analysis.SpotifyAnalysis;
-import Backend.ParseJson;
+import Backend.Helper.ParseJson;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
