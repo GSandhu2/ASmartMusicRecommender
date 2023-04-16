@@ -1,6 +1,8 @@
 package Backend.Spotify;
 
-import javax.net.ssl.HttpsURLConnection;
+import Backend.Helper.HttpRequest;
+import Backend.Helper.ParseJson;
+
 import java.awt.*;
 import java.io.*;
 import java.net.*;
@@ -39,25 +41,18 @@ public class SpotifyAuth {
         // Creates AccessCode object from the json data sent by Spotify.
         private AccessCode(String jsonLine) {
             // Parse JSON for value locations.
-            int accessTokenStart = jsonLine.indexOf("\"access_token\":");
-            int tokenTypeStart = jsonLine.indexOf("\"token_type\":");
-            //int scopeStart = jsonLine.indexOf("\"scope\":"); // We aren't using scopes yet.
-            int expiresInStart = jsonLine.indexOf("\"expires_in\":");
-            int refreshTokenStart = jsonLine.indexOf("\"refresh_token\":");
-
-            // Parse JSON for values.
-            code = jsonLine.substring(accessTokenStart + 16, tokenTypeStart - 2);
-            System.out.println("SpotifyAuth: Access Token = " + code);
-            type = jsonLine.substring(tokenTypeStart + 14, expiresInStart - 2);
-            System.out.println("SpotifyAuth: Token Type = " + type);
-            String expirationString = jsonLine.substring(expiresInStart + 13, refreshTokenStart - 1);
-            System.out.println("SpotifyAuth: Expires In = " + expirationString + " seconds from now");
-            refresh = jsonLine.substring(refreshTokenStart + 17, jsonLine.length() - 2);
-            System.out.println("SpotifyAuth: Refresh Token = " + refresh);
-
-            // Convert expires_in seconds value to expiration time.
-            expiration = LocalDateTime.now().plusSeconds(Integer.parseInt(expirationString));
-            System.out.println("SpotifyAuth: Expiration Time = " + expiration);
+            try {
+                code = ParseJson.getString(jsonLine, "access_token");
+                System.out.println("SpotifyAuth: Access Token = " + code);
+                type = ParseJson.getString(jsonLine, "token_type");
+                System.out.println("SpotifyAuth: Token Type = " + type);
+                refresh = ParseJson.getString(jsonLine, "refresh_token");
+                System.out.println("SpotifyAuth: Refresh Token = " + refresh);
+                // Calculate expiration time.
+                int expiresIn = ParseJson.getInt(jsonLine, "expires_in");
+                expiration = LocalDateTime.now().plusSeconds(expiresIn);
+                System.out.println("SpotifyAuth: Expiration Time = " + expiration);
+            } catch (RuntimeException e) { throw new RuntimeException("SpotifyAuth: Failed to parse access token - " + e.getMessage()); }
         }
 
         // Writes this access code to the directory.
@@ -165,8 +160,7 @@ public class SpotifyAuth {
         System.out.println("SpotifyAuth: Opening browser to authorize");
         URI uri;
         try { uri = new URL(url.toString()).toURI(); }
-        catch (MalformedURLException e) { throw new IllegalStateException("SpotifyAuth: Bad URL - " + e.getMessage()); }
-        catch (URISyntaxException e) { throw new IllegalStateException("SpotifyAuth: Bad UR - " + e.getMessage()); }
+        catch (MalformedURLException | URISyntaxException e) { throw new IllegalStateException("SpotifyAuth: Bad URL - " + e.getMessage()); }
 
         // Open link in default browser. See https://stackoverflow.com/questions/10967451/open-a-link-in-browser-with-java-button
         try { Desktop.getDesktop().browse(uri); }
@@ -222,8 +216,6 @@ public class SpotifyAuth {
 
     // See https://docs.oracle.com/javase/tutorial/networking/urls/readingWriting.html
     private static AccessCode getAccessCode(String codeVerifier, String authorizationCode) {
-        AccessCode result;
-
         // Build URL and request body.
         String url = "https://accounts.spotify.com/api/token";
         StringBuilder body = new StringBuilder();
@@ -233,35 +225,14 @@ public class SpotifyAuth {
         body.append("client_id="); body.append(CLIENT_ID); body.append("&");
         body.append("code_verifier="); body.append(codeVerifier);
 
+        System.out.println("SpotifyAuth: Sending request for access token.");
         try {
-            // Connect to URL and send request.
-            System.out.println("SpotifyAuth: Sending request for access token.");
-            HttpsURLConnection connection = (HttpsURLConnection) (new URL(url).openConnection());
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); // Means parameters are in URL.
-            connection.setDoOutput(true);
-            connection.connect();
-            connection.getOutputStream().write(body.toString().getBytes(StandardCharsets.UTF_8));
-            connection.getOutputStream().close();
-
-            // Get response and close.
-            InputStreamReader isr;
-            if (connection.getResponseCode() >= 400)
-                isr = new InputStreamReader(connection.getErrorStream(), StandardCharsets.UTF_8);
-            else
-                isr = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8);
-            BufferedReader reader = new BufferedReader(isr);
-            String jsonLine = reader.readLine();
-            isr.close();
-
             // Parse access token from response.
+            AccessCode result = new AccessCode(HttpRequest.postAndGetJsonFromUrlBody(url, body.toString()));
             System.out.println("SpotifyAuth: Got access token.");
-            result = new AccessCode(jsonLine);
+            return result;
         }
-        catch (MalformedURLException e) { throw new IllegalStateException("SpotifyAuth: Bad URL - " + e.getMessage()); }
-        catch (IOException e) { e.printStackTrace(); throw new IllegalStateException("SpotifyAuth: Failed to connect to Spotify - " + e.getMessage()); }
-
-        return result;
+        catch (RuntimeException e) { throw new RuntimeException("SpotifyAuth: Failed to get access token - " + e.getMessage()); }
     }
     //endregion
 

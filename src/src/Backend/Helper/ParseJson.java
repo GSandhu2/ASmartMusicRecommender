@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * Extracts data from Json objects.
- * Throw IllegalArgumentException on failure.
+ * Throw RuntimeException on failure.
  */
 public class ParseJson {
 
@@ -54,7 +54,7 @@ public class ParseJson {
         if (result.equals("true") || result.equals("false"))
             return Boolean.parseBoolean(result);
         else
-            throw new IllegalArgumentException("ParseJson: Did not find boolean at key " + key);
+            throw new RuntimeException("ParseJson: Did not find boolean at key " + key);
     }
 
     // Gets a json value key:integer from a json object.
@@ -74,19 +74,20 @@ public class ParseJson {
     // "main" method.
     // bounds are "" for strings, [] for arrays, and {} for objects.
     private static String getValue(String jsonObject, String key, String bounds) {
-        int start = jsonObject.indexOf("\"" + key + "\"") + key.length() + 5;
+        String string = removeSpaces(jsonObject);
+        int start = string.indexOf("\"" + key + "\"") + key.length() + 3 + (bounds.length()/2);
         if (start == -1)
-            throw new IllegalArgumentException("ParseJson: Json key not found - " + start);
-        int end = findEnd(jsonObject, key, start, bounds);
+            throw new RuntimeException("ParseJson: Json key not found - " + start);
+        int end = findEnd(string, key, start - (bounds.length()/2), bounds);
 
-        return jsonObject.substring(start, end);
+        return string.substring(start, end);
     }
 
     // Finds the end of a json value.
     private static int findEnd(String jsonObject, String key, int start, String bounds) {
         // Check types.
         if (!bounds.isEmpty() && jsonObject.charAt(start) != bounds.charAt(0))
-            throw new IllegalArgumentException("ParseJson: Json type mismatch - " +
+            throw new RuntimeException("ParseJson: Json type mismatch - " +
                     jsonObject.charAt(start) + " != " + bounds.charAt(0));
 
         // Find end of number/boolean.
@@ -104,7 +105,7 @@ public class ParseJson {
         if (bounds.charAt(1) == '\"') {
             result = jsonObject.indexOf("\"", start + 1);
             if (result == -1)
-                throw new IllegalArgumentException("ParseJson: Could not find string at key " + key);
+                throw new RuntimeException("ParseJson: Could not find string at key " + key);
             return result;
         }
 
@@ -119,12 +120,25 @@ public class ParseJson {
                 return i;
         }
 
-        throw new IllegalArgumentException("ParseJson: Could not find end of " +
+        throw new RuntimeException("ParseJson: Could not find end of " +
                 (bounds.charAt(0) == '[' ? "array" : "object") + " at key " + key);
     }
 
     private static String getNumber(String jsonObject, String key) {
         return getValue(jsonObject, key, "");
+    }
+
+    // Removes spaces between keys and values.
+    private static String removeSpaces(String jsonString) {
+        StringBuilder result = new StringBuilder(jsonString.length());
+        boolean inString = false;
+        for (int i = 0; i < jsonString.length(); i++) {
+            if (jsonString.charAt(i) == '\"')
+                inString = !inString;
+            if (inString || jsonString.charAt(i) != ' ')
+                result.append(jsonString.charAt(i));
+        }
+        return result.toString();
     }
 
     //endregion
