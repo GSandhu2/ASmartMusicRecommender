@@ -9,6 +9,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 /**
+ * @author Ethan Carnahan
  * Make/receive http requests.
  * Throws RuntimeException on error responses or IO errors.
  * Throws IllegalArgumentException on bad Url.

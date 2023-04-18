@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * @author Ethan Carnahan
  * Extracts data from Json objects.
  * Throw RuntimeException on failure.
  */
