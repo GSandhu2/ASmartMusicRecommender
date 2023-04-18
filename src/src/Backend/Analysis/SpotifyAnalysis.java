@@ -1,5 +1,6 @@
 package Backend.Analysis;
 
+import Backend.Helper.ParseJson;
 import Backend.Spotify.SpotifyAPI;
 
 import java.text.DecimalFormat;
@@ -26,20 +27,20 @@ public class SpotifyAnalysis implements SoundAnalysis {
     // Multiplies arctan bounds from pi/2 to 1.
     private static final double ARCTAN_MULTIPLIER = 2.0 / Math.PI;
 
-    public SpotifyAnalysis(double acousticness, double danceability, double energy, double instrumentalness, double liveness, double speechiness, double valence, double loudness, double tempo, int duration_ms, int key, int mode, int time_signature) {
-        this.acousticness = acousticness;
-        this.danceability = danceability;
-        this.energy = energy;
-        this.instrumentalness = instrumentalness;
-        this.liveness = liveness;
-        this.speechiness = speechiness;
-        this.valence = valence;
-        this.loudness = loudness;
-        this.tempo = tempo;
-        this.duration_ms = duration_ms;
-        this.key = key;
-        this.mode = mode;
-        this.time_signature = time_signature;
+    public SpotifyAnalysis(String jsonString) {
+        acousticness     = ParseJson.getDouble(jsonString, "acousticness");
+        danceability     = ParseJson.getDouble(jsonString, "danceability");
+        energy           = ParseJson.getDouble(jsonString, "energy");
+        instrumentalness = ParseJson.getDouble(jsonString, "instrumentalness");
+        liveness         = ParseJson.getDouble(jsonString, "liveness");
+        speechiness      = ParseJson.getDouble(jsonString, "speechiness");
+        valence          = ParseJson.getDouble(jsonString, "valence");
+        loudness         = ParseJson.getDouble(jsonString, "loudness");
+        tempo            = ParseJson.getDouble(jsonString, "tempo");
+        duration_ms      = ParseJson.getInt(jsonString, "duration_ms");
+        key              = ParseJson.getInt(jsonString, "key");
+        mode             = ParseJson.getInt(jsonString, "mode");
+        time_signature   = ParseJson.getInt(jsonString, "time_signature");
     }
     //endregion
 
