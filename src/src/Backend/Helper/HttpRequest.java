@@ -29,11 +29,11 @@ public class HttpRequest {
     }
 
     // Used to send POST request for Json using Content-Type "application/x-www-form-urlencoded".
-    public static String postAndGetJsonFromUrlBody(String url, String body) throws RuntimeException {
+    public static String postAndGetJsonFromUrlBody(String url, String body, String contentType) throws RuntimeException {
         try {
             HttpsURLConnection connection = (HttpsURLConnection) (new URL(url).openConnection());
             connection.setRequestMethod("POST");
-            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); // Means parameters are in URL.
+            connection.setRequestProperty("Content-Type", contentType); // Means parameters are in URL.
             connection.setDoOutput(true);
             connection.connect();
             connection.getOutputStream().write(body.getBytes(StandardCharsets.UTF_8));
