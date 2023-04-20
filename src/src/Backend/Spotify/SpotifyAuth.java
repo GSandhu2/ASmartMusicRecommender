@@ -21,6 +21,7 @@ public class SpotifyAuth {
     //region Fields and AccessCode
     private static final String CLIENT_ID = "7449838d0e614661b59e4778c51e31ae";
     private static final String REDIRECT_URI = "http://localhost:1234/auth";
+    private static final String SCOPES = "playlist-modify-private";
     private static final int REDIRECT_PORT = 1234;
     private AccessCode accessCode;
 
@@ -155,6 +156,7 @@ public class SpotifyAuth {
         url.append("response_type=code&");
         url.append("redirect_uri="); url.append(REDIRECT_URI); url.append("&");
         url.append("state="); url.append(codeVerifier); url.append("&");
+        url.append("scope="); url.append(SCOPES); url.append("&");
         url.append("code_challenge_method=S256&");
         url.append("code_challenge="); url.append(codeChallenge);
         System.out.println("SpotifyAuth: Opening browser to authorize");
