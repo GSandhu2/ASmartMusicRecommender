@@ -4,7 +4,7 @@ import Backend.Analysis.SpotifyAnalysis;
 import Backend.Helper.HttpRequest;
 
 /**
- * @author Ethan Carnahan
+ * @author Ethan Carnahan, Eric Kumar
  * Used to interact with Spotify.
  */
 public class SpotifyAPI {
