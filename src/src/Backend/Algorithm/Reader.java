@@ -75,6 +75,11 @@ public class Reader {
         return sampleRate;
     }
 
+    // Returns duration in seconds.
+    public double getDuration() {
+        return (double)left.length / (double)sampleRate;
+    }
+
     // returns null for right channel of mono audio file.
     public short[] getChannel(Channel channel) {
         return (channel == Channel.LEFT) ? left : right;
@@ -88,6 +93,7 @@ public class Reader {
             // mp3 info
             System.out.println("mp3 mode = " + mp3.getMode());
             System.out.println("mp3 sample rate = " + mp3.getSampleRate());
+            System.out.println("mp3 duration = " + mp3.getDuration());
 
             // left channel samples
             System.out.println("\nmp3 samples:");
