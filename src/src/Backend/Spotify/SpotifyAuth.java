@@ -230,7 +230,7 @@ public class SpotifyAuth {
         System.out.println("SpotifyAuth: Sending request for access token.");
         try {
             // Parse access token from response.
-            AccessCode result = new AccessCode(HttpRequest.postAndGetJsonFromUrlBody(url, body.toString(), "application/x-www-form-urlencoded"));
+            AccessCode result = new AccessCode(HttpRequest.postAndGetJsonFromUrlBody(url, body.toString(), "application/x-www-form-urlencoded", null));
             System.out.println("SpotifyAuth: Got access token.");
             return result;
         }

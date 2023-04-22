@@ -29,9 +29,12 @@ public class HttpRequest {
     }
 
     // Used to send POST request for Json using Content-Type "application/x-www-form-urlencoded".
-    public static String postAndGetJsonFromUrlBody(String url, String body, String contentType) throws RuntimeException {
+    // Use null for authorization if you don't need it.
+    public static String postAndGetJsonFromUrlBody(String url, String body, String contentType, String authorization) throws RuntimeException {
         try {
             HttpsURLConnection connection = (HttpsURLConnection) (new URL(url).openConnection());
+            if (authorization != null)
+                connection.setRequestProperty("Authorization", authorization);
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", contentType); // Means parameters are in URL.
             connection.setDoOutput(true);

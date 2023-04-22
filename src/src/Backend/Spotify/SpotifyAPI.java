@@ -48,7 +48,7 @@ public class SpotifyAPI {
         body.append("description: Playlist created by ASMR");
         body.append("public:false");
         String responseString;
-        try {responseString = HttpRequest.postAndGetJsonFromUrlBody(url, body.toString(), JSON_TYPE);}
+        try {responseString = HttpRequest.postAndGetJsonFromUrlBody(url, body.toString(), JSON_TYPE, accessToken);}
         catch (RuntimeException e) {throw new RuntimeException("SpotifyAPI: Failed to connect to Spotify - " + e.getMessage());}
         return responseString;
     }
