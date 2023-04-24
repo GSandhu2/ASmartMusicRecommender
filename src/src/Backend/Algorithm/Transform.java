@@ -20,7 +20,7 @@ public class Transform {
   public static final int FREQUENCY_RESOLUTION = 120; // 10 octaves * 12 notes per octaves.
   public static final double BOTTOM_FREQUENCY = 20; // Lowest audible pitch in Hz.
   public static final double TOP_FREQUENCY = 20480; // Slightly over highest audible pitch, but is a convenient 20 * 2^10.
-  private static final double TOP_BOTTOM_RATIO = TOP_FREQUENCY / BOTTOM_FREQUENCY;
+  public static final double TOP_BOTTOM_RATIO = TOP_FREQUENCY / BOTTOM_FREQUENCY;
   private static final double TWO_PI = Math.PI * 2.0;
 
   // First dimension is time index, second dimension is frequency index, value is amplitude.
