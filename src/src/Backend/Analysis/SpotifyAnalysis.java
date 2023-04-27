@@ -4,6 +4,7 @@ import Backend.Helper.ParseJson;
 import Backend.Spotify.SpotifyAPI;
 
 import java.text.DecimalFormat;
+import java.util.Arrays;
 
 /**
  * @author Ethan Carnahan
@@ -26,8 +27,8 @@ public class SpotifyAnalysis implements SoundAnalysis {
   private static final double DIFFERENCE_EXPONENT = 0.5;
   // Multiplies arctan bounds from pi/2 to 1.
   private static final double ARCTAN_MULTIPLIER = 2.0 / Math.PI;
-
-  public SpotifyAnalysis(String jsonString) {
+  private final String trackId;
+  public SpotifyAnalysis(String jsonString, String trackId) {
     acousticness = ParseJson.getDouble(jsonString, "acousticness");
     danceability = ParseJson.getDouble(jsonString, "danceability");
     energy = ParseJson.getDouble(jsonString, "energy");
@@ -41,6 +42,7 @@ public class SpotifyAnalysis implements SoundAnalysis {
     key = ParseJson.getInt(jsonString, "key");
     mode = ParseJson.getInt(jsonString, "mode");
     time_signature = ParseJson.getInt(jsonString, "time_signature");
+    this.trackId = trackId;
   }
   //endregion
 
@@ -175,5 +177,12 @@ public class SpotifyAnalysis implements SoundAnalysis {
         maxSong1 + " and " + maxSong2 + " = " + format.format(max));
     System.out.println("SpotifyAnalysis: Furthest song similarity is between songs " +
         minSong1 + " and " + minSong2 + " = " + format.format(min));
+    String[] trackIds = new String[6];
+    for (int i = 0; i < songs.length; i++) {
+      trackIds[i] = "spotify:track:" + songs[i].trackId;
+    }
+    System.out.println(Arrays.toString(trackIds));
+    SpotifyAPI.createPlaylist(trackIds);
+
   }
 }
