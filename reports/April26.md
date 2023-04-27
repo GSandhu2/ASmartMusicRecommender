@@ -1,0 +1,16 @@
+Team Report:
+- Rough fourier transform is working.
+  - +Balanced: Given white noise returns equal amplitudes for all frequencies.
+  - -Slow: Runs about 4x the speed of playing the sound.
+  - -Inaccurate: A single tone leaks some amplitude into the entire audible sound spectrum.
+  - -First attempt to solve the two issues using a variable "window length" made the results imbalanced, so it was not committed.
+- Meeting Agenda:
+  - Hope Gursameep shows up so Ethan can show him how to add his name to the team member list for the class website.
+  - Discuss UI.
+- Goals:
+  - Backend:
+    - Write tests for functionality that isn't dependent on external behavior (like Spotify servers and MP3 library).
+    - Create non-empty Spotify playlist.
+    - Continue working on sound analysis.
+  - Frontend:
+    - Create main menu.
