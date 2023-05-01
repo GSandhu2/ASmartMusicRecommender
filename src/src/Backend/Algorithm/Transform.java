@@ -60,8 +60,7 @@ public class Transform {
 
     // for each frequency bin
     for (int j = 0; j <= FREQUENCY_RESOLUTION; j++) {
-      double frequency =
-          BOTTOM_FREQUENCY * Math.pow(TOP_BOTTOM_RATIO, (double) j / FREQUENCY_RESOLUTION);
+      double frequency = frequencyAtBin(j);
       // for each time sample
       for (int i = 0; i < samples; i++) {
         int center = (int) (i * audioSamplesPerSample);
@@ -93,7 +92,7 @@ public class Transform {
 
   // Nuttall window.
   // See https://en.wikipedia.org/wiki/Window_function#Nuttall_window,_continuous_first_derivative
-  private static double window(int index, int length) {
+  public static double window(int index, int length) {
     double angle = TWO_PI * index / length;
     return ((0.355768) - (0.4891775 * Math.cos(angle)) + (0.1365995 * Math.cos(2 * angle)) -
         (0.0106411 * Math.cos(3 * angle))) / 0.355768;
@@ -101,7 +100,7 @@ public class Transform {
 
   // Allows you to go out of bounds by mirroring the index back in-bounds and inverting the sample value.
   // Just make sure you don't go double out of bounds.
-  private static short mirrorBounds(short[] audioSamples, int index) {
+  public static short mirrorBounds(short[] audioSamples, int index) {
       if (index >= 0 && index < audioSamples.length) {
           return audioSamples[index];
       }
@@ -110,6 +109,11 @@ public class Transform {
       } else {
           return (short) (-audioSamples[(2 * audioSamples.length) - index - 2] & 0xFFFF);
       }
+  }
+
+  // Tells you the frequency of any bin.
+  public static double frequencyAtBin(int index) {
+    return BOTTOM_FREQUENCY * Math.pow(TOP_BOTTOM_RATIO, (double) index / FREQUENCY_RESOLUTION);
   }
   //endregion
 
@@ -128,8 +132,7 @@ public class Transform {
 
       System.out.print("    Frequencies:");
         for (int i = 0; i <= FREQUENCY_RESOLUTION; i++) {
-            System.out.print(" " + String.format("%8s", format.format(
-                BOTTOM_FREQUENCY * Math.pow(TOP_BOTTOM_RATIO, (double) i / FREQUENCY_RESOLUTION))));
+            System.out.print(" " + String.format("%8s", format.format(frequencyAtBin(i))));
         }
       System.out.println();
 
