@@ -205,5 +205,7 @@ public class SpotifyAnalysis implements SoundAnalysis {
     System.out.println(Arrays.toString(trackIds));
     SpotifyAPI.createPlaylist(trackIds);
 
+    SpotifyAPI.randomSong();
+
   }
 }

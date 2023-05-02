@@ -13,6 +13,7 @@ public class SpotifyAPI {
   private static final String API_URL = "https://api.spotify.com/v1/audio-features/";
   private static final String CREATE_PLAYLIST_URL = "https://api.spotify.com/v1/users/";
   private static final String VIEW_PLAYLIST_URL = "https://api.spotify.com/v1/playlists/";
+  private static final String GET_SONG_URL = "https://api.spotify.com/v1/search?q=";
   private static final String USER_ID = "eric_123*";
   private static final String JSON_TYPE = "application/json";
   private static final SpotifyAuth auth = new SpotifyAuth();
@@ -62,7 +63,6 @@ public class SpotifyAPI {
           accessToken);
       System.out.println("Response String" + responseString);
       String id = ParseJson.getString(responseString, "id");
-//      id = id.substring(2);
       System.out.println("Trying to get playlist id:" + id);
       String playlistAdditionUrl = VIEW_PLAYLIST_URL + id + "/tracks?uris=" + uris;
       System.out.println(playlistAdditionUrl);
@@ -71,8 +71,48 @@ public class SpotifyAPI {
     } catch (RuntimeException e) {
       throw new RuntimeException("SpotifyAPI: Failed to connect to Spotify - " + e.getMessage());
     }
-//    return responseString;
   }
+
+  /**
+   * Fetches a random song from Spotify
+   *
+   * @throws RuntimeException if something goes wrong. It could be so many things.
+   * @returns song returns a random song from Spotify
+   */
+
+  public static String randomSong() {
+    StringBuilder song = new StringBuilder();
+    String accessToken = auth.getAccessCode();
+    // A list of all characters that can be chosen.
+    String characters = "abcdefghijklmnopqrstuvwxyz";
+
+    // Gets a random character from the characters string.
+    char randomCharacter = characters.charAt((int) Math.floor(Math.random() * characters.length()));
+
+    // Places the wildcard character at the beginning, or both beginning and end, randomly.
+    switch ((int) Math.round(Math.random())) {
+      case 0:
+        song.append(randomCharacter + '%');
+        break;
+      case 1:
+        song.append('%' + randomCharacter + '%');
+        break;
+    }
+    String responseString;
+    try {
+      StringBuilder url = new StringBuilder(GET_SONG_URL);
+      url.append(song);
+      url.append("&type=track");
+      responseString = HttpRequest.getJsonFromUrl(url.toString(), accessToken);
+      System.out.println("Response String" + responseString);
+      String id = ParseJson.getString(responseString, "id");
+
+    } catch (RuntimeException e) {
+      throw new RuntimeException("SpotifyAPI: Failed to connect to Spotify - " + e.getMessage());
+    }
+    return responseString;
+  }
+
 
   //endregion
 
