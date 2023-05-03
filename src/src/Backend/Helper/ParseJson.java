@@ -80,13 +80,29 @@ public class ParseJson {
   // bounds are "" for strings, [] for arrays, and {} for objects.
   private static String getValue(String jsonObject, String key, String bounds) {
     String string = removeSpaces(jsonObject);
-    int start = string.indexOf("\"" + key + "\"") + key.length() + 3 + (bounds.length() / 2);
-      if (start == -1) {
-          throw new RuntimeException("ParseJson: Json key not found - " + start);
-      }
+    int start = findStart(string, key, bounds);
     int end = findEnd(string, key, start - (bounds.length() / 2), bounds);
 
     return string.substring(start, end);
+  }
+
+  // Finds the beginning of a json value that isn't in a nested object.
+  private static int findStart(String jsonObject, String key, String bounds) {
+    int numBounds = 0;
+    for (int i = 0; i < jsonObject.length(); i++) {
+      if (jsonObject.charAt(i) == '{' || jsonObject.charAt(i) == '[')
+        numBounds++;
+      else if (jsonObject.charAt(i) == '}' || jsonObject.charAt(i) == ']')
+        numBounds--;
+      if (jsonObject.charAt(i) == '\"' && numBounds == 1) {
+        // Check if string is key.
+        int stringEnd = jsonObject.indexOf('\"', i+1);
+        String string = jsonObject.substring(i+1, stringEnd);
+        if (string.equals(key))
+          return i + key.length() + 3 + (bounds.length()/2);
+      }
+    }
+    throw new RuntimeException("ParseJson: Failed to find key " + key);
   }
 
   // Finds the end of a json value.
