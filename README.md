@@ -17,6 +17,10 @@ Code Layout:
     - Graphics - Images and fonts used in the program.
 
 # Information for Alpha Assignment: 
+Current functionality:
+- Matches Spotify songs to other Spotify songs at random.
+- Local sound analysis not done.
+
 To build/test:
 - Clone repository into IntelliJ and set Java level to 19.
 - May have to restart or click a button to sync Maven dependencies.
