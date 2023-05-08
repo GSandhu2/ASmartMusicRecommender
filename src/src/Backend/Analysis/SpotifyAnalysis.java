@@ -68,6 +68,10 @@ public class SpotifyAnalysis implements SoundAnalysis {
   //endregion
 
   //region Methods
+  public String getTrackId() {
+    return trackId;
+  }
+
   @Override
   public double compareTo(SoundAnalysis other) {
       if (!(other instanceof SpotifyAnalysis otherSpotify)) {

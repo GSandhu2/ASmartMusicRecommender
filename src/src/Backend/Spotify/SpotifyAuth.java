@@ -31,8 +31,9 @@ public class SpotifyAuth {
   // Rest of program only needs "code".
   private static class AccessCode {
 
-    private final String code, type, refresh;
-    private final LocalDateTime expiration;
+    private String code, refresh;
+    private final String type;
+    private LocalDateTime expiration;
 
     // Used for ReadAccessCode().
     private AccessCode(String code, String type, String refresh, LocalDateTime expiration) {
@@ -90,8 +91,6 @@ public class SpotifyAuth {
   }
 
   /**
-   * Todo: Refresh expired token instead of getting new one.
-   *
    * @return A valid access code to put in the "Authorization" header of Spotify API requests.
    */
   public String getAccessCode() {
@@ -111,11 +110,12 @@ public class SpotifyAuth {
         }
       }
     }
-    // Get new access code if it's expired.
+
+    // Refresh access code if it's expired.
     if (LocalDateTime.now().isAfter(accessCode.expiration)) {
       System.out.println("SpotifyAuth: Saved access code is expired");
       System.out.println("SpotifyAuth: Getting new access code");
-      accessCode = getNewAccessCode();
+      refreshAccessCode(accessCode);
       try {
         accessCode.WriteAccessCode(System.getProperty("user.dir"));
       } catch (IOException e2) {
@@ -285,7 +285,31 @@ public class SpotifyAuth {
   }
   //endregion
 
-  //region Todo: Refresh access token.
+  //region Refresh access token.
+  private static void refreshAccessCode(AccessCode accessCode) {
+    String url = "https://accounts.spotify.com/api/token";
+    StringBuilder body = new StringBuilder();
+    body.append("grant_type=refresh_token&");
+    body.append("refresh_token=");
+    body.append(accessCode.refresh);
+    body.append("&");
+    body.append("client_id=");
+    body.append(CLIENT_ID);
+
+    System.out.println("SpotifyAuth: Sending request for refresh token.");
+    try {
+      // Parse refreshed token from response.
+      String result = HttpRequest.postAndGetJsonFromUrlBody(url, body.toString(),
+          "application/x-www-form-urlencoded", null);
+      System.out.println("SpotifyAuth: Got refreshed token.");
+      accessCode.code = ParseJson.getString(result, "access_token");
+      accessCode.refresh = ParseJson.getString(result, "refresh_token");
+      int expiresIn = ParseJson.getInt(result, "expires_in");
+      accessCode.expiration = LocalDateTime.now().plusSeconds(expiresIn);
+    } catch (RuntimeException e) {
+      throw new RuntimeException("SpotifyAuth: Failed to get access token - " + e.getMessage());
+    }
+  }
   //endregion
 
   // Test getting access token.
