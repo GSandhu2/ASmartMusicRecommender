@@ -154,6 +154,7 @@ public class SpotifyAnalysis implements SoundAnalysis {
   //endregion
 
   // Tests comparing specified Spotify songs.
+  // Creates a playlist for the user id in args[0].
   // Songs:
   // Jungle from Terraria: 5KTKq3BrXttaTT7P0RQbQF
   // Long-Lost Chapters from Genshin Impact: 1DMWlAyeAcwzIRsHIq1eT5
@@ -207,6 +208,7 @@ public class SpotifyAnalysis implements SoundAnalysis {
       trackIds[i] = "spotify:track:" + songs[i].trackId;
     }
     System.out.println(Arrays.toString(trackIds));
+    SpotifyAPI.setUserId(args[0]);
     SpotifyAPI.createPlaylist(trackIds);
 
   }

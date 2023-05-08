@@ -10,14 +10,41 @@ import Backend.Helper.ParseJson;
  */
 public class SpotifyAPI {
 
-  private static final String API_URL = "https://api.spotify.com/v1/audio-features/";
-  private static final String CREATE_PLAYLIST_URL = "https://api.spotify.com/v1/users/";
-  private static final String VIEW_PLAYLIST_URL = "https://api.spotify.com/v1/playlists/";
-  private static final String USER_ID = "eric_123*";
+  private static final String FEATURES_URL = "https://api.spotify.com/v1/audio-features/";
+  private static final String USERS_URL = "https://api.spotify.com/v1/users/";
+  private static final String PLAYLIST_URL = "https://api.spotify.com/v1/playlists/";
   private static final String JSON_TYPE = "application/json";
   private static final SpotifyAuth auth = new SpotifyAuth();
+  private static String USER_ID = "";
 
   //region Public methods
+
+  /**
+   * Sets the username to use for future SpotifyAPI calls.
+   *
+   * @param userId The user's Spotify username.
+   * @return The display name of the Spotify user, or username if there isn't one.
+   * @throws RuntimeException if username does not exist or something else goes wrong.
+   */
+  public static String setUserId(String userId) {
+    String accessToken = auth.getAccessCode();
+    String url = USERS_URL + userId;
+    String jsonString;
+    try {
+      jsonString = HttpRequest.getJsonFromUrl(url, accessToken);
+    } catch (RuntimeException e) {
+      throw new RuntimeException("Spotify API: Invalid username - " + e.getMessage());
+    }
+
+    USER_ID = userId;
+
+    try {
+      String displayName = ParseJson.getString(jsonString, "display_name");
+      return displayName;
+    } catch (RuntimeException e) { // Happens if display_name is null
+      return userId;
+    }
+  }
 
   /**
    * Gets Spotify's track analysis of a song.
@@ -29,7 +56,7 @@ public class SpotifyAPI {
   public static SpotifyAnalysis getTrackFeatures(String trackId) {
     // Request track features.
     String accessToken = auth.getAccessCode();
-    String url = API_URL + trackId;
+    String url = FEATURES_URL + trackId;
     String jsonString;
     try {
       jsonString = HttpRequest.getJsonFromUrl(url, accessToken);
@@ -49,7 +76,7 @@ public class SpotifyAPI {
    */
   public static void createPlaylist(String[] trackIds) {
     String accessToken = auth.getAccessCode();
-    String playlistCreationUrl = CREATE_PLAYLIST_URL + USER_ID + "/playlists";
+    String playlistCreationUrl = USERS_URL + USER_ID + "/playlists";
     String uris = String.join(",", trackIds);
     System.out.println("TrackIds parameter:" + uris);
     StringBuilder body = new StringBuilder();
@@ -64,7 +91,7 @@ public class SpotifyAPI {
       String id = ParseJson.getString(responseString, "id");
 //      id = id.substring(2);
       System.out.println("Trying to get playlist id:" + id);
-      String playlistAdditionUrl = VIEW_PLAYLIST_URL + id + "/tracks?uris=" + uris;
+      String playlistAdditionUrl = PLAYLIST_URL + id + "/tracks?uris=" + uris;
       System.out.println(playlistAdditionUrl);
       HttpRequest.postAndGetJsonFromUrlBody(playlistAdditionUrl, "", null, accessToken);
 
