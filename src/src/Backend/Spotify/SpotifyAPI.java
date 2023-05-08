@@ -125,6 +125,7 @@ public class SpotifyAPI {
         song.append('%' + randomCharacter + '%');
         break;
     }
+    System.out.println("Song:" + song);
     String responseString;
     try {
       StringBuilder url = new StringBuilder(SEARCH_SONG_URL);
