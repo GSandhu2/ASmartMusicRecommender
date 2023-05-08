@@ -4,6 +4,7 @@ import Backend.Analysis.SpotifyAnalysis;
 import Backend.Helper.HttpRequest;
 import Backend.Helper.ParseJson;
 
+
 /**
  * @author Ethan Carnahan, Eric Kumar
  * Used to interact with Spotify.
@@ -13,7 +14,8 @@ public class SpotifyAPI {
   private static final String API_URL = "https://api.spotify.com/v1/audio-features/";
   private static final String CREATE_PLAYLIST_URL = "https://api.spotify.com/v1/users/";
   private static final String VIEW_PLAYLIST_URL = "https://api.spotify.com/v1/playlists/";
-  private static final String GET_SONG_URL = "https://api.spotify.com/v1/search?q=";
+  private static final String SEARCH_SONG_URL = "https://api.spotify.com/v1/search?q=";
+  private static final String SEARCH_TRACK_URL = "https://api.spotify.com/v1/tracks/";
   private static final String USER_ID = "eric_123*";
   private static final String JSON_TYPE = "application/json";
   private static final SpotifyAuth auth = new SpotifyAuth();
@@ -52,7 +54,6 @@ public class SpotifyAPI {
     String accessToken = auth.getAccessCode();
     String playlistCreationUrl = CREATE_PLAYLIST_URL + USER_ID + "/playlists";
     String uris = String.join(",", trackIds);
-    System.out.println("TrackIds parameter:" + uris);
     StringBuilder body = new StringBuilder();
     body.append("{\"name\": \"ASMR playlist\",");
     body.append("\"description\": \"Playlist created by ASMR\",");
@@ -61,11 +62,8 @@ public class SpotifyAPI {
     try {
       responseString = HttpRequest.postAndGetJsonFromUrlBody(playlistCreationUrl, body.toString(), JSON_TYPE,
           accessToken);
-      System.out.println("Response String" + responseString);
       String id = ParseJson.getString(responseString, "id");
-      System.out.println("Trying to get playlist id:" + id);
       String playlistAdditionUrl = VIEW_PLAYLIST_URL + id + "/tracks?uris=" + uris;
-      System.out.println(playlistAdditionUrl);
       HttpRequest.postAndGetJsonFromUrlBody(playlistAdditionUrl, "", null, accessToken);
 
     } catch (RuntimeException e) {
@@ -100,13 +98,23 @@ public class SpotifyAPI {
     }
     String responseString;
     try {
-      StringBuilder url = new StringBuilder(GET_SONG_URL);
+      StringBuilder url = new StringBuilder(SEARCH_SONG_URL);
       url.append(song);
       url.append("&type=track");
+      url.append("&limit=1");
       responseString = HttpRequest.getJsonFromUrl(url.toString(), accessToken);
-      System.out.println("Response String" + responseString);
-      String id = ParseJson.getString(responseString, "id");
-
+      System.out.println("Response String:" + responseString);
+      String track = ParseJson.getObject(responseString, "tracks");
+      System.out.println("Track: " + track);
+      String[] items = ParseJson.getArray(track, "items");
+      System.out.println("Items:" + items);
+      String id = items[9];
+      StringBuilder url2 = new StringBuilder(SEARCH_TRACK_URL);
+      url2.append(id);
+      System.out.println("Second url:" + url2);
+      responseString = HttpRequest.getJsonFromUrl(url2.toString(), accessToken);
+      String spotifyLink = ParseJson.getString(responseString, "spotify");
+      System.out.println("Song Link:" + spotifyLink);
     } catch (RuntimeException e) {
       throw new RuntimeException("SpotifyAPI: Failed to connect to Spotify - " + e.getMessage());
     }
