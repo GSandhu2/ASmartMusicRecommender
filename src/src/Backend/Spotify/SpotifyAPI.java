@@ -4,6 +4,8 @@ import Backend.Analysis.SpotifyAnalysis;
 import Backend.Helper.HttpRequest;
 import Backend.Helper.ParseJson;
 
+import java.util.Arrays;
+
 /**
  * @author Ethan Carnahan, Eric Kumar
  * Used to interact with Spotify.
@@ -104,46 +106,53 @@ public class SpotifyAPI {
    * @return The URL to a random song from Spotify
    */
 
-  public static String randomSong() {
-    String spotifyLink;
+  public static String[] randomSong(int num) {
+    String[] spotifyIds = new String[num - 1];
 
-    StringBuilder song = new StringBuilder();
+    String song = "";
     String accessToken = auth.getAccessCode();
     // A list of all characters that can be chosen.
     String characters = "abcdefghijklmnopqrstuvwxyz";
 
     // Gets a random character from the characters string.
-    char randomCharacter = characters.charAt((int) Math.floor(Math.random() * characters.length()));
+    String randomCharacter = String.valueOf(
+        characters.charAt((int) Math.floor(Math.random() * characters.length())));
 
     // Places the wildcard character at the beginning, or both beginning and end, randomly.
     switch ((int) Math.round(Math.random())) {
-      case 0 -> song.append(randomCharacter + '%');
-      case 1 -> song.append('%' + randomCharacter + '%');
+      case 0 -> song = randomCharacter + "$";
+      case 1 -> song = "$" + randomCharacter + "$";
     }
-    System.out.println("Song:" + song);
+    System.out.println("song: " + song);
+
     String responseString;
     try {
       String url = SEARCH_SONG_URL + song
           + "&type=track"
-          + "&limit=1";
+          + "&limit="+num;
 
       responseString = HttpRequest.getJsonFromUrl(url, accessToken);
-      //System.out.println("Response String:" + responseString);
+      System.out.println("Response String:" + responseString);
+      String tracks = ParseJson.getObject(responseString, "tracks");
+      String[] items = ParseJson.getArray(tracks, "items");
+      System.out.println(items.length + " Items:" + Arrays.toString(items));
+      for (int i = 0; i < num - 1; i++) {
 
-      String track = ParseJson.getObject(responseString, "tracks");
-      //System.out.println("Track: " + track);
+        //System.out.println("Track: " + track);
+        //System.out.println("Items:" + Arrays.toString(items));
 
-      String[] items = ParseJson.getArray(track, "items");
-      //System.out.println("Items:" + Arrays.toString(items));
+        String id = ParseJson.getString(items[i],"id");
+        spotifyIds[i] = id;
+//      responseString = HttpRequest.getJsonFromUrl(SEARCH_TRACK_URL + id, accessToken);
+//      spotifyLink = ParseJson.getString(ParseJson.getObject(responseString, "external_urls"), "spotify");
+        //System.out.println("Random song Link: " + spotifyLink);
+      }
 
-      String id = ParseJson.getString(items[0],"id");
-      responseString = HttpRequest.getJsonFromUrl(SEARCH_TRACK_URL + id, accessToken);
-      spotifyLink = ParseJson.getString(ParseJson.getObject(responseString, "external_urls"), "spotify");
-      //System.out.println("Random song Link: " + spotifyLink);
     } catch (RuntimeException e) {
+      e.printStackTrace();
       throw new RuntimeException("SpotifyAPI: Failed to connect to Spotify - " + e.getMessage());
     }
-    return spotifyLink;
+    return spotifyIds;
   }
 
   //endregion

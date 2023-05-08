@@ -4,6 +4,7 @@ import Backend.Helper.ParseJson;
 import Backend.Spotify.SpotifyAPI;
 
 import java.text.DecimalFormat;
+import java.util.Arrays;
 
 /**
  * @author Ethan Carnahan
@@ -210,6 +211,6 @@ public class SpotifyAnalysis implements SoundAnalysis {
     SpotifyAPI.setUserId(args[0]);
     SpotifyAPI.createPlaylist(trackIds);
 
-    System.out.println("Random track link: " + SpotifyAPI.randomSong());
+    System.out.println("Random track link: " + Arrays.toString(SpotifyAPI.randomSong(35)));
   }
 }
