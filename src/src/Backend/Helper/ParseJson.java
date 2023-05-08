@@ -45,6 +45,9 @@ public class ParseJson {
           numBounds--;
       }
     }
+    // Array is size 0 or 1.
+    if (result.size() == 0)
+      result.add(array);
     return result.toArray(new String[0]);
   }
 
