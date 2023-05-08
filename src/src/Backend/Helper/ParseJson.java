@@ -100,6 +100,8 @@ public class ParseJson {
       if (jsonObject.charAt(i) == '\"' && numBounds == 1) {
         // Check if string is key.
         int stringEnd = jsonObject.indexOf('\"', i+1);
+        if (stringEnd == -1)
+          throw new RuntimeException("ParseJson: Failed to find key " + key);
         String string = jsonObject.substring(i+1, stringEnd);
         if (string.equals(key))
           return i + key.length() + 3 + (bounds.length()/2);

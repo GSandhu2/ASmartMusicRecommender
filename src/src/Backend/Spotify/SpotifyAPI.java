@@ -4,8 +4,6 @@ import Backend.Analysis.SpotifyAnalysis;
 import Backend.Helper.HttpRequest;
 import Backend.Helper.ParseJson;
 
-import java.util.Arrays;
-
 /**
  * @author Ethan Carnahan, Eric Kumar
  * Used to interact with Spotify.
@@ -44,8 +42,7 @@ public class SpotifyAPI {
     USER_ID = userId;
 
     try {
-      String displayName = ParseJson.getString(jsonString, "display_name");
-      return displayName;
+      return ParseJson.getString(jsonString, "display_name");
     } catch (RuntimeException e) { // Happens if display_name is null
       return userId;
     }
@@ -79,9 +76,9 @@ public class SpotifyAPI {
    * @param trackIds List of the random strings after "track/" in the url of a song.
    * @throws RuntimeException if something goes wrong. It could be so many things.
    */
-  public static void createPlaylist(String[] trackIds, String username) {
+  public static void createPlaylist(String[] trackIds) {
     String accessToken = auth.getAccessCode();
-    String playlistCreationUrl = CREATE_PLAYLIST_URL + username + "/playlists";
+    String playlistCreationUrl = CREATE_PLAYLIST_URL + USER_ID + "/playlists";
     String uris = String.join(",", trackIds);
     StringBuilder body = new StringBuilder();
     body.append("{\"name\": \"ASMR playlist\",");
@@ -104,10 +101,12 @@ public class SpotifyAPI {
    * Fetches a random song from Spotify
    *
    * @throws RuntimeException if something goes wrong. It could be so many things.
-   * @returns song returns a random song from Spotify
+   * @return The URL to a random song from Spotify
    */
 
   public static String randomSong() {
+    String spotifyLink;
+
     StringBuilder song = new StringBuilder();
     String accessToken = auth.getAccessCode();
     // A list of all characters that can be chosen.
@@ -118,37 +117,33 @@ public class SpotifyAPI {
 
     // Places the wildcard character at the beginning, or both beginning and end, randomly.
     switch ((int) Math.round(Math.random())) {
-      case 0:
-        song.append(randomCharacter + '%');
-        break;
-      case 1:
-        song.append('%' + randomCharacter + '%');
-        break;
+      case 0 -> song.append(randomCharacter + '%');
+      case 1 -> song.append('%' + randomCharacter + '%');
     }
     System.out.println("Song:" + song);
     String responseString;
     try {
-      StringBuilder url = new StringBuilder(SEARCH_SONG_URL);
-      url.append(song);
-      url.append("&type=track");
-      url.append("&limit=1");
-      responseString = HttpRequest.getJsonFromUrl(url.toString(), accessToken);
-      System.out.println("Response String:" + responseString);
+      String url = SEARCH_SONG_URL + song
+          + "&type=track"
+          + "&limit=1";
+
+      responseString = HttpRequest.getJsonFromUrl(url, accessToken);
+      //System.out.println("Response String:" + responseString);
+
       String track = ParseJson.getObject(responseString, "tracks");
-      System.out.println("Track: " + track);
+      //System.out.println("Track: " + track);
+
       String[] items = ParseJson.getArray(track, "items");
-      System.out.println("Items:" + Arrays.toString(items));
+      //System.out.println("Items:" + Arrays.toString(items));
+
       String id = ParseJson.getString(items[0],"id");
-      StringBuilder url2 = new StringBuilder(SEARCH_TRACK_URL);
-      url2.append(id);
-      System.out.println("Second url:" + url2);
-      responseString = HttpRequest.getJsonFromUrl(url2.toString(), accessToken);
-      String spotifyLink = ParseJson.getString(responseString, "spotify");
-      System.out.println("Song Link:" + spotifyLink);
+      responseString = HttpRequest.getJsonFromUrl(SEARCH_TRACK_URL + id, accessToken);
+      spotifyLink = ParseJson.getString(ParseJson.getObject(responseString, "external_urls"), "spotify");
+      //System.out.println("Random song Link: " + spotifyLink);
     } catch (RuntimeException e) {
       throw new RuntimeException("SpotifyAPI: Failed to connect to Spotify - " + e.getMessage());
     }
-    return responseString;
+    return spotifyLink;
   }
 
   //endregion
