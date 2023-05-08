@@ -107,19 +107,22 @@ public class SpotifyAPI {
   public static String randomSong() {
     String spotifyLink;
 
-    StringBuilder song = new StringBuilder();
+    String song = "";
     String accessToken = auth.getAccessCode();
     // A list of all characters that can be chosen.
     String characters = "abcdefghijklmnopqrstuvwxyz";
 
     // Gets a random character from the characters string.
-    char randomCharacter = characters.charAt((int) Math.floor(Math.random() * characters.length()));
+    String randomCharacter = String.valueOf(
+        characters.charAt((int) Math.floor(Math.random() * characters.length())));
 
     // Places the wildcard character at the beginning, or both beginning and end, randomly.
     switch ((int) Math.round(Math.random())) {
-      case 0 -> song.append(randomCharacter + '%');
-      case 1 -> song.append('%' + randomCharacter + '%');
+      case 0 -> song = randomCharacter + "$";
+      case 1 -> song = "$" + randomCharacter + "$";
     }
+    System.out.println("song: " + song);
+
     String responseString;
     try {
       String url = SEARCH_SONG_URL + song
@@ -140,6 +143,7 @@ public class SpotifyAPI {
       spotifyLink = ParseJson.getString(ParseJson.getObject(responseString, "external_urls"), "spotify");
       //System.out.println("Random song Link: " + spotifyLink);
     } catch (RuntimeException e) {
+      e.printStackTrace();
       throw new RuntimeException("SpotifyAPI: Failed to connect to Spotify - " + e.getMessage());
     }
     return spotifyLink;
