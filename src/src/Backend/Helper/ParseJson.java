@@ -14,7 +14,7 @@ public class ParseJson {
 
   // Gets a json value key:{object} from a json object.
   public static String getObject(String jsonObject, String key) {
-    return getValue(jsonObject, key, "{}");
+    return "{" + getValue(jsonObject, key, "{}") + "}";
   }
 
   // Gets a json value key:[array] from a json object.
