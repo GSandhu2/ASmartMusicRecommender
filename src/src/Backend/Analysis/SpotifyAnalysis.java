@@ -4,7 +4,6 @@ import Backend.Helper.ParseJson;
 import Backend.Spotify.SpotifyAPI;
 
 import java.text.DecimalFormat;
-import java.util.Arrays;
 
 /**
  * @author Ethan Carnahan
@@ -154,6 +153,7 @@ public class SpotifyAnalysis implements SoundAnalysis {
   //endregion
 
   // Tests comparing specified Spotify songs.
+  // Creates a playlist for the username in args[0].
   // Songs:
   // Jungle from Terraria: 5KTKq3BrXttaTT7P0RQbQF
   // Long-Lost Chapters from Genshin Impact: 1DMWlAyeAcwzIRsHIq1eT5
@@ -206,10 +206,10 @@ public class SpotifyAnalysis implements SoundAnalysis {
     for (int i = 0; i < songs.length; i++) {
       trackIds[i] = "spotify:track:" + songs[i].trackId;
     }
-    String username = "eric_123*";
-    SpotifyAPI.createPlaylist(trackIds, username);
 
-    SpotifyAPI.randomSong();
+    SpotifyAPI.setUserId(args[0]);
+    SpotifyAPI.createPlaylist(trackIds);
 
+    System.out.println("Random track link: " + SpotifyAPI.randomSong());
   }
 }
