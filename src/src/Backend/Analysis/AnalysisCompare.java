@@ -37,6 +37,21 @@ public class AnalysisCompare {
     return result;
   }
 
+  public static List<CompareResult> compareAnalyses(List<SoundAnalysis> userAnalyses, List<SoundAnalysis> compareTo) {
+    List<CompareResult> result = new ArrayList<>(userAnalyses.size() * compareTo.size());
+
+    // gather results
+    for (SoundAnalysis userAnalysis : userAnalyses)
+      for (SoundAnalysis soundAnalysis : compareTo)
+        result.add(new CompareResult(userAnalysis, soundAnalysis));
+
+    // sort results
+    result.sort(Comparator.comparingDouble(o -> o.result));
+    Collections.reverse(result);
+
+    return result;
+  }
+
   // Test running compareAnalyses with RandomAnalysis and print results.
   public static void main(String[] args) {
     List<SoundAnalysis> analyses = new ArrayList<>();
