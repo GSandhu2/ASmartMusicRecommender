@@ -50,9 +50,9 @@ public class SpotifyAPI {
    * @param trackIds List of the random strings after "track/" in the url of a song.
    * @throws RuntimeException if something goes wrong. It could be so many things.
    */
-  public static void createPlaylist(String[] trackIds) {
+  public static void createPlaylist(String[] trackIds, String userId) {
     String accessToken = auth.getAccessCode();
-    String playlistCreationUrl = CREATE_PLAYLIST_URL + USER_ID + "/playlists";
+    String playlistCreationUrl = CREATE_PLAYLIST_URL + userId + "/playlists";
     String uris = String.join(",", trackIds);
     StringBuilder body = new StringBuilder();
     body.append("{\"name\": \"ASMR playlist\",");
