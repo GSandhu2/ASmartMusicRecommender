@@ -16,20 +16,20 @@ Code Layout:
     - Control - How the program responds to user input.
     - Graphics - Images and fonts used in the program.
 
-# Information for Alpha Assignment: 
-Current functionality:
-- Matches Spotify songs to other Spotify songs at random.
-- Local sound analysis not done.
+# Information for Alpha Release: 
+Demo functionality:
+- Matches Spotify songs to ~50 other Spotify songs at random.
+- UI is working, but prints match results to console.
+- No local sound analysis for now.
 
-To build/test:
+To install:
 - Clone repository into IntelliJ and set Java level to 19.
 - May have to restart or click a button to sync Maven dependencies.
-- Open Maven tab on the right and click "compile"/"test".
+- (Important) Email ethancar@uw.edu with your Spotify email so I can give you access to the Spotify API, otherwise you'll see an authorization error in the console. Spotify only allows "a maximum of 25 users in develoment mode".
 
-To run:
-- Clone repository into IntelliJ and set Java level to 19.
-- May have to restart or click a button to sync Maven dependencies.
-- Run main method in front-end.
+To build/test: Open Maven tab on the right and click "compile"/"test".
+
+To run: Run main method in frontend/Home.java.
 
 # Information for users/developers:
 To develop:
