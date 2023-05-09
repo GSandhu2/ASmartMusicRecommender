@@ -12,8 +12,8 @@ import java.util.List;
 public class AnalysisCompare {
 
   public static class CompareResult {
-    final SoundAnalysis a, b;
-    final double result;
+    public final SoundAnalysis a, b;
+    public final double result;
 
     public CompareResult(SoundAnalysis a, SoundAnalysis b) {
       this.a = a;

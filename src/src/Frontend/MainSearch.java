@@ -4,11 +4,25 @@
  */
 package Frontend;
 
+import Backend.Analysis.AnalysisCompare;
+import Backend.Analysis.AnalysisCompare.CompareResult;
+import Backend.Analysis.SoundAnalysis;
+import Backend.Analysis.SpotifyAnalysis;
+import Backend.Spotify.SpotifyAPI;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author Arnav
  */
 public class MainSearch extends javax.swing.JFrame {
+
+    // Values above 50 will not work for now.
+    private int numberOfComparisonSongs = 50;
+    private String id = "";
+    private DecimalFormat percentFormat = new DecimalFormat("0.00%");
 
     /**
      * Creates new form MainSearch
@@ -29,16 +43,16 @@ public class MainSearch extends javax.swing.JFrame {
         jTextField1 = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jTextField1.setText("Search....");
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
+        jTextField1.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTextField1KeyReleased(evt);
             }
         });
 
@@ -52,8 +66,6 @@ public class MainSearch extends javax.swing.JFrame {
             }
         });
 
-        jButton2.setText("Generate Playlist");
-
         jButton3.setText("Suggest Songs");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -61,61 +73,69 @@ public class MainSearch extends javax.swing.JFrame {
             }
         });
 
-        jLabel2.setText("Song Name:");
+        jLabel2.setText("Track ID:");
+
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel3.setText("Invalid ID");
+        jLabel3.setVisible(false);
+
+        jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel4.setText("<html>\nType in the \"track ID\" of a Spotify song. This can be found in<br>\nthe song's \"share\" link after \"/track/\". For example, the track ID of<br>\n <a href=\"https://open.spotify.com/track/17lrs2l9qXEuFybi7hSsid?si=37b141e7c99649c7\">\nhttps://open.spotify.com/track/17lrs2l9qXEuFybi7hSsid?si=37b141e7c99649c7</a><br>\nis \"17lrs2l9qXEuFybi7hSsid\". Do not include the \"?si=\" value.\n</html>");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jButton1)
-                .addGap(215, 215, 215))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                            .addComponent(jLabel2)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createSequentialGroup()
+                            .addGap(34, 34, 34)
+                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jButton1)
+                        .addGap(23, 23, 23)
+                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(149, 149, 149))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(161, 161, 161)
-                        .addComponent(jButton2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(177, 177, 177)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 146, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(222, 222, 222)
-                        .addComponent(jLabel1)))
-                .addContainerGap(115, Short.MAX_VALUE))
+                .addGap(222, 222, 222)
+                .addComponent(jLabel1)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, 523, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(19, 19, 19)
                 .addComponent(jLabel1)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2))
-                .addGap(82, 82, 82)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel3)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton2)
-                    .addComponent(jButton3))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButton1)
-                .addContainerGap(87, Short.MAX_VALUE))
+                    .addComponent(jButton3)
+                    .addComponent(jButton1))
+                .addContainerGap(71, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private String jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
-        // TODO add your handling code here:
-        return evt.toString();
-    }//GEN-LAST:event_jTextField1ActionPerformed
-
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
         this.toBack();
         setVisible(false);
         new Login().toFront();
@@ -123,10 +143,42 @@ public class MainSearch extends javax.swing.JFrame {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        // TODO add your handling code here:
-        String trackID = jTextField1ActionPerformed(evt);
-        System.out.println("Hello " + trackID);
+        jButton3.setText("Working...");
+        try {
+            // Get user analysis.
+            List<SoundAnalysis> userAnalysis = new ArrayList<>();
+            userAnalysis.add(SpotifyAPI.getTrackFeatures(id));
+
+            // Get N random songs to compare with.
+            List<SoundAnalysis> comparisonAnalyses = new ArrayList<>(numberOfComparisonSongs);
+            String[] comparisonIds = SpotifyAPI.randomSong(numberOfComparisonSongs);
+            for (String id : comparisonIds)
+                comparisonAnalyses.add(SpotifyAPI.getTrackFeatures(id));
+
+            // Compare songs and print results.
+            List<CompareResult> results = AnalysisCompare.compareAnalyses(userAnalysis, comparisonAnalyses);
+
+            String[] resultIds = new String[results.size()];
+            for (int i = 0; i < results.size(); i++)
+                resultIds[i] = ((SpotifyAnalysis) results.get(i).b).getTrackId();
+            String[] resultUrls = SpotifyAPI.getTrackURLs(resultIds);
+
+            for (int i = 0; i < results.size(); i++) {
+                String matchPercent = percentFormat.format(results.get(i).result);
+                System.out.println(resultUrls[i] + " = " + matchPercent);
+            }
+
+        } catch (RuntimeException e) {
+            jLabel3.setVisible(true);
+            e.printStackTrace();
+            System.out.println("MainSearch: Invalid ID - " + e.getMessage());
+        }
+        jButton3.setText("Suggest Songs");
     }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jTextField1KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField1KeyReleased
+        id = jTextField1.getText();
+    }//GEN-LAST:event_jTextField1KeyReleased
 
     /**
      * @param args the command line arguments
@@ -165,10 +217,11 @@ public class MainSearch extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
 }
