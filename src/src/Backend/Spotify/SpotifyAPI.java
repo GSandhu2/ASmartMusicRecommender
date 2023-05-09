@@ -42,6 +42,7 @@ public class SpotifyAPI {
     }
 
     USER_ID = userId;
+    System.out.println("SpotifyAPI: Set user ID to " + USER_ID);
 
     try {
       return ParseJson.getString(jsonString, "display_name");
