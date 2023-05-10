@@ -23,7 +23,7 @@ Demo functionality:
 - No local sound analysis for now.
 
 To install:
-- Clone repository into IntelliJ and set Java level to 19.
+- Clone repository into the most recent available version of IntelliJ and set Java level to 19.
 - May have to restart or click a button to sync Maven dependencies.
 - (Important) Email ethancar@uw.edu with your Spotify email so I can give you access to the Spotify API, otherwise you'll see an authorization error in the console. Spotify only allows "a maximum of 25 users in develoment mode".
 
@@ -33,7 +33,7 @@ To run: Run main method in frontend/Home.java.
 
 # Information for users/developers:
 To develop:
-- Clone repository and set Java level to 19.
+- Clone repository into the most recent available version of IntelliJ and set Java level to 19.
 - Assign yourself an issue or write a new issue to work on.
 - If multiple people are assigned to the same issue, communicate to prevent merge conflicts.
 
