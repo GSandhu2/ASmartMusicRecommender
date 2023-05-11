@@ -23,11 +23,14 @@ Demo functionality:
 - No local sound analysis for now.
 
 To install:
-- Clone repository into the most recent available version of IntelliJ and set Java level to 19.
-- May have to restart or click a button to sync Maven dependencies.
+- Install most recent available version of IntelliJ (either community or ultimate version works)
+- Link: https://www.jetbrains.com/idea/download/
+- Open IntelliJ and use "Get from VCS" to clone repository.
+- Go to File -> Project Structure and set Java level to 19 (may also need to select/install SDK).
 - (Important) Email ethancar@uw.edu with your Spotify email so I can give you access to the Spotify API, otherwise you'll see an authorization error in the console. Spotify only allows "a maximum of 25 users in develoment mode".
 
-To build/test: Open Maven tab on the right and click "compile"/"test".
+To build: Open Maven tab on the right and run ASmartMusicRecommender/Lifecycle/compile.
+To test: Right click on test folder and click "Run all tests".
 
 To run: Run main method in frontend/Home.java.
 
