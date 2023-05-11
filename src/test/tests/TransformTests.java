@@ -60,6 +60,8 @@ public class TransformTests {
   }
 
   // Basic test for helper method.
+  // To run set method to public.
+  /*
   @Test
   public void testMirrorBounds() {
     short[] samples = {0, 1, 2, 1, 0};
@@ -73,6 +75,7 @@ public class TransformTests {
     assertEquals(-1, Transform.mirrorBounds(samples, 5));
     assertEquals(-2, Transform.mirrorBounds(samples, 6));
   }
+  */
 
   /*
   // Passing requirements:
