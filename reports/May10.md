@@ -1,0 +1,20 @@
+Team Report:
+- Accomplishments:
+    - UI that asks for Spotify username, track ID, and prints match results to console (Arnav + Ethan)
+    - Automatically refresh expired access tokens for Spotify (Ethan)
+    - Compare one track to multiple random Spotify tracks. (Eric + Ethan)
+    - EqualLoudness and EqualLoudnessTests (Ethan)
+- Meeting Agenda:
+    - Hope Gursameep shows up so Ethan can show him how to add his name to the team member list for the class website.
+    - Research to see if the Spotify API's "recommend" command can be useful without relying on artists/genres.
+    - Discuss what match results should look like in UI.
+- Goals:
+    - Backend:
+        - Work on FullAnalysis and other Algorithm classes. (Ethan)
+        - Rewrite Transform to run faster, maybe multithreaded. (Ethan)
+        - Add JUnit tests for ParseJson. (Ethan)
+        - Spotify API: Recommend command. (Eric)
+        - Spotify API: Get song names from track IDs. (Eric)
+    - Frontend:
+        - Display match results in UI. (Arnav)
+        - Clickable links. (Arnav)
