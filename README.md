@@ -34,6 +34,8 @@ To test: Right click on test folder and click "Run all tests".
 
 To run: Run main method in frontend/Home.java.
 
+Use cases: Right now, our primary use case is finding songs similar sounding to the song that you like.
+
 # Information for users/developers:
 To develop:
 - Clone repository into the most recent available version of IntelliJ and set Java level to 19.
