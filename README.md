@@ -32,7 +32,14 @@ To install:
 To build: Open Maven tab on the right and run ASmartMusicRecommender/Lifecycle/compile.
 To test: Right click on test folder and click "Run all tests". Folder is located in ASmartMusicRecommender/src/test.
 
-To run: Run main method in ASmartMusicRecommender/src/src/frontend/Home.java.
+To run: 
+- Run main method in ASmartMusicRecommender/src/src/frontend/Home.java.
+- When it asks for a Spotify username type in "31gy6dsm5x3oqdl5i6djftgvycii"
+- If it opens spotify in your browser the password is "password123"
+- Then you copy the Spotify track ID as shown on the app.
+- The results will show up in your IntelliJ console.
+- The links in the console are the links that will take you to the song in Spotify.
+- The numbers next to the links are the analysis results based on our sound analysis algorithm.
 
 Use cases: Right now, our primary use case is finding songs similar sounding to the song that you like.
 
