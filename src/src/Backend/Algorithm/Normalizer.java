@@ -14,8 +14,8 @@ public class Normalizer {
   // A full amplitude sine wave will be treated as this volume.
   private static final double dbOfMax = 90;
   // The normalizer will try to set a fourier transform to this perceived volume +- errorBound.
-  private static final double targetVolume = 25600; // 80 phons
-  private static final double errorBound = 1, ratioMultiplier = 1;//, spreadDamp = 1;
+  private static final double targetVolume = 256; // 80 phons
+  private static final double errorBound = 0.1, ratioMultiplier = 1;//, spreadDamp = 1;
 
   public static double[] normalize(double[] averageVolume) {
     // Copy array
@@ -56,16 +56,17 @@ public class Normalizer {
 
     if (spread != 0)
       return sum / (1 + (Transform.FREQUENCY_RESOLUTION * spread * spreadDamp));
-    else*/
-      return sum;
+    else
+      return sum;*/
+    return sum / (Transform.FREQUENCY_RESOLUTION);
   }
 
   private static double loudnessToDb(double loudness) {
-    return dbOfMax + (10 * Math.log10(loudness / Short.MAX_VALUE));
+    return dbOfMax + (20 * Math.log10(loudness / Short.MAX_VALUE));
   }
 
   private static double phonsToLoudness(double phons) {
-    return 100 * Math.pow(2, phons / 10);
+    return Math.pow(2, phons / 10);
   }
 
   // Convert loudness to perceived loudness.
@@ -95,7 +96,7 @@ public class Normalizer {
   // Test the effects of normalization on a perfectly flat frequency response.
   // Changing testVolume should have no effect. Changing targetVolume should.
   public static void main(String[] args) {
-    double testVolume = 50;
+    double testVolume = Short.MAX_VALUE;
 
     double[] volume = new double[Transform.FREQUENCY_RESOLUTION];
     Arrays.fill(volume, testVolume);
