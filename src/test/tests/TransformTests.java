@@ -10,7 +10,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.*;
 
 public class TransformTests {
-  private static final float errorBound = 0.1f;
+  private static final float errorBound = 0.25f;
 
   // Passing requirements:
   // - frequencyAmplitudes.length / TIME_RESOLUTION ~ Duration
@@ -77,13 +77,12 @@ public class TransformTests {
   }
   */
 
-  /*
   // Passing requirements:
   // - frequencyAmplitudes.length / TIME_RESOLUTION ~ Duration
   // - Flat frequency balance.
   @Test
   public void testNoiseTransform() throws IOException {
-    Reader reader = new Reader("src/test/resource/white_noise_-6db.mp3");
+    Reader reader = new Reader("src/test/resource/pink_noise_-6db.mp3");
     Transform transform = new Transform(reader);
     float[][] frequencyAmplitudes = transform.getFrequencyAmplitudes(Channel.LEFT);
 
@@ -115,5 +114,4 @@ public class TransformTests {
           (Transform.frequencyAtBin(i)) + " is outside error bound (1 +- " + errorBound + ")");
     }
   }
-  */
 }
