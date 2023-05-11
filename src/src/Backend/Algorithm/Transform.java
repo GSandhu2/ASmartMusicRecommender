@@ -14,10 +14,11 @@ public class Transform {
 
   //region Fields and public methods
   // The sample rate of the fourier analysis in samples per second.
-  // Higher value has more temporal resolution, lower value uses less space and has less spectral leakage.
   public static final double TIME_RESOLUTION = 20;
   // There are this many frequency bins between the top/bottom frequency.
   public static final int FREQUENCY_RESOLUTION = 120; // 10 octaves * 12 notes per octaves.
+  // Smaller number = less leaking between frequency bins but takes longer to calculate.
+  private static final double BOTTOM_FILTER_WIDTH = 2;
   public static final double BOTTOM_FREQUENCY = 20; // Lowest audible pitch in Hz.
   public static final double TOP_FREQUENCY = 20480; // Slightly over highest audible pitch, but is a convenient 20 * 2^10.
   public static final double TOP_BOTTOM_RATIO = TOP_FREQUENCY / BOTTOM_FREQUENCY;
@@ -50,23 +51,29 @@ public class Transform {
   public float[][] getFrequencyAmplitudes(Channel channel) {
     return (channel == Channel.LEFT) ? leftFrequencyAmplitudes : rightFrequencyAmplitudes;
   }
+
+  // Tells you the frequency of any bin.
+  public static double frequencyAtBin(int index) {
+    return BOTTOM_FREQUENCY * Math.pow(TOP_BOTTOM_RATIO, (double) index / FREQUENCY_RESOLUTION);
+  }
   //endregion
 
   //region Transform methods
-  // Performs full transform on a channel of audio.
+
   private static float[][] cqt(short[] audioSamples, int samples, int sampleRate) {
-    float[][] result = new float[samples][FREQUENCY_RESOLUTION + 1];
+    float[][] result = new float[samples][FREQUENCY_RESOLUTION];
     double audioSamplesPerSample = (double) audioSamples.length / samples;
 
     // for each frequency bin
-    for (int j = 0; j <= FREQUENCY_RESOLUTION; j++) {
+    for (int j = 0; j < FREQUENCY_RESOLUTION; j++) {
       double frequency = frequencyAtBin(j);
+      int windowLength = windowLength(j, sampleRate);
       // for each time sample
       for (int i = 0; i < samples; i++) {
         int center = (int) (i * audioSamplesPerSample);
-        int start = center - (int) (audioSamplesPerSample / 2.0);
-        int end = center + (int) (audioSamplesPerSample / 2.0);
-        result[i][j] = transform(audioSamples, start, end, frequency, sampleRate);
+        int start = center - (windowLength / 2);
+        result[i][j] = transform(audioSamples, start, windowLength, frequency, sampleRate);
+        result[i][j] /= windowLength;
       }
     }
 
@@ -74,20 +81,26 @@ public class Transform {
   }
 
   // Performs transform for a specific frequency and time period.
-  private static float transform(short[] audioSamples, int start, int end, double frequency,
-      int sampleRate) {
+  private static float transform(short[] audioSamples, int start, int length, double frequency, int sampleRate) {
     double realSum = 0.0, complexSum = 0.0;
 
-    for (int i = start; i <= end; i++) {
+    int end = start + length;
+    for (int i = start; i < end; i++) {
       double angle = (i - start) * TWO_PI * frequency / sampleRate;
-      double window = window(i - start, end - start);
+      double window = window(i - start, length);
       realSum += window * mirrorBounds(audioSamples, i) * Math.cos(angle);
       complexSum += window * mirrorBounds(audioSamples, i) * Math.sin(angle);
     }
 
-    realSum /= (end - start);
-    complexSum /= (end - start);
     return (float) Math.sqrt((realSum * realSum) + (complexSum * complexSum));
+  }
+
+  private static int windowLength(int frequencyBin, int sampleRate) {
+    return (int)Math.ceil(sampleRate / filterWidth(frequencyBin));
+  }
+
+  private static double filterWidth(int frequencyBin) {
+    return BOTTOM_FILTER_WIDTH * Math.pow(TOP_BOTTOM_RATIO, (double)frequencyBin / FREQUENCY_RESOLUTION);
   }
 
   // Nuttall window.
@@ -101,19 +114,14 @@ public class Transform {
   // Allows you to go out of bounds by mirroring the index back in-bounds and inverting the sample value.
   // Just make sure you don't go double out of bounds.
   public static short mirrorBounds(short[] audioSamples, int index) {
-      if (index >= 0 && index < audioSamples.length) {
-          return audioSamples[index];
-      }
-      if (index < 0) {
-          return (short) (-audioSamples[-index] & 0xFFFF);
-      } else {
-          return (short) (-audioSamples[(2 * audioSamples.length) - index - 2] & 0xFFFF);
-      }
-  }
-
-  // Tells you the frequency of any bin.
-  public static double frequencyAtBin(int index) {
-    return BOTTOM_FREQUENCY * Math.pow(TOP_BOTTOM_RATIO, (double) index / FREQUENCY_RESOLUTION);
+    if (index >= 0 && index < audioSamples.length) {
+      return audioSamples[index];
+    }
+    if (index < 0) {
+      return (short) (-audioSamples[-index] & 0xFFFF);
+    } else {
+      return (short) (-audioSamples[(2 * audioSamples.length) - index - 2] & 0xFFFF);
+    }
   }
   //endregion
 
@@ -131,7 +139,7 @@ public class Transform {
               / (int) TIME_RESOLUTION) + " samples):");
 
       System.out.print("    Frequencies:");
-        for (int i = 0; i <= FREQUENCY_RESOLUTION; i++) {
+        for (int i = 0; i < FREQUENCY_RESOLUTION; i++) {
             System.out.print(" " + String.format("%8s", format.format(frequencyAtBin(i))));
         }
       System.out.println();
