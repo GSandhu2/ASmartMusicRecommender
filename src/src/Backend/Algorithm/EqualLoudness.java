@@ -1,5 +1,7 @@
 package Backend.Algorithm;
 
+import java.text.DecimalFormat;
+
 /**
  * @author Ethan Carnahan
  * Converts loudness from decibels to phons based on frequency.
@@ -83,4 +85,46 @@ public class EqualLoudness {
     return outStart + (outDifference * startToEnd);
   }
   //endregion
+
+  // Print the equal loudness contour of the 0, 50, and 100 phon lines.
+  public static void main(String[] args) {
+    DecimalFormat format = new DecimalFormat("#####.00");
+    System.out.print("Frequencies:");
+    for (int i = 0; i < Transform.FREQUENCY_RESOLUTION; i++) {
+      System.out.print(" " + String.format("%8s", format.format(
+          Transform.BOTTOM_FREQUENCY * Math.pow(Transform.TOP_BOTTOM_RATIO,
+              (double) i / Transform.FREQUENCY_RESOLUTION))));
+    }
+    System.out.println();
+
+    System.out.print("     0 phon:");
+    for (int i = 0; i < Transform.FREQUENCY_RESOLUTION; i++) {
+      double frequency = Transform.BOTTOM_FREQUENCY * Math.pow(Transform.TOP_BOTTOM_RATIO,
+          (double) i / Transform.FREQUENCY_RESOLUTION);
+      System.out.print(" " + String.format("%8s", format.format(
+          phonsToDb(0, frequency)
+      )));
+    }
+    System.out.println();
+
+    System.out.print("    50 phon:");
+    for (int i = 0; i < Transform.FREQUENCY_RESOLUTION; i++) {
+      double frequency = Transform.BOTTOM_FREQUENCY * Math.pow(Transform.TOP_BOTTOM_RATIO,
+          (double) i / Transform.FREQUENCY_RESOLUTION);
+      System.out.print(" " + String.format("%8s", format.format(
+          phonsToDb(50, frequency)
+      )));
+    }
+    System.out.println();
+
+    System.out.print("   100 phon:");
+    for (int i = 0; i < Transform.FREQUENCY_RESOLUTION; i++) {
+      double frequency = Transform.BOTTOM_FREQUENCY * Math.pow(Transform.TOP_BOTTOM_RATIO,
+          (double) i / Transform.FREQUENCY_RESOLUTION);
+      System.out.print(" " + String.format("%8s", format.format(
+          phonsToDb(100, frequency)
+      )));
+    }
+    System.out.println();
+  }
 }
