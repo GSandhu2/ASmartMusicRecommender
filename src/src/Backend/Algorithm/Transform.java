@@ -189,7 +189,7 @@ public class Transform {
 
   // Allows you to go out of bounds by mirroring the index back in-bounds and inverting the sample value.
   // Just make sure you don't go double out of bounds.
-  public static short mirrorBounds(short[] audioSamples, int index) {
+  private static short mirrorBounds(short[] audioSamples, int index) {
     if (index >= 0 && index < audioSamples.length) {
       return audioSamples[index];
     }
