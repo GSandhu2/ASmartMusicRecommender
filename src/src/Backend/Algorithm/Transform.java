@@ -3,6 +3,8 @@ package Backend.Algorithm;
 import Backend.Algorithm.Reader.Channel;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveTask;
 
 /**
  * @author Ethan Carnahan
@@ -37,10 +39,10 @@ public class Transform {
       }
 
     // Perform transform
-    leftFrequencyAmplitudes = cqt(audio.getChannel(Channel.LEFT), timeSamples,
+    leftFrequencyAmplitudes = multithread_cqt(audio.getChannel(Channel.LEFT), timeSamples,
         audio.getSampleRate());
       if (audio.getMode() == Reader.Mode.STEREO) {
-          rightFrequencyAmplitudes = cqt(audio.getChannel(Channel.RIGHT), timeSamples,
+          rightFrequencyAmplitudes = multithread_cqt(audio.getChannel(Channel.RIGHT), timeSamples,
               audio.getSampleRate());
       } else {
           rightFrequencyAmplitudes = null;
@@ -58,8 +60,10 @@ public class Transform {
   }
   //endregion
 
-  //region Transform methods
+  //region CQT multithreaded class and methods
 
+  // Virgin Single-threaded CQT
+  /*
   private static float[][] cqt(short[] audioSamples, int samples, int sampleRate) {
     float[][] result = new float[samples][FREQUENCY_RESOLUTION];
     double audioSamplesPerSample = (double) audioSamples.length / samples;
@@ -78,6 +82,78 @@ public class Transform {
     }
 
     return result;
+  }
+  */
+
+  // Chad Multi-threaded CQT
+  private static float[][] multithread_cqt(short[] audioSamples, int samples, int sampleRate) {
+    CQT task = new CQT(audioSamples, sampleRate, samples, 0, samples);
+    try (ForkJoinPool fjp = new ForkJoinPool()) {
+      return fjp.invoke(task);
+    }
+  }
+
+  private static class CQT extends RecursiveTask<float[][]> {
+    private final short[] audioSamples;
+    private final int sampleRate, samples, sampleStart, sampleEnd;
+    // Each thread runs on <1 second of audio.
+    private static final int threshold = (int)TIME_RESOLUTION;
+
+    public CQT(short[] audioSamples, int sampleRate, int samples, int sampleStart, int sampleEnd) {
+      this.audioSamples = audioSamples;
+      this.sampleRate = sampleRate;
+      this.samples = samples;
+      this.sampleStart = sampleStart;
+      this.sampleEnd = sampleEnd;
+    }
+
+    @Override
+    protected float[][] compute() {
+      int length = sampleEnd - sampleStart;
+      if (length <= threshold)
+        return partialCQT();
+
+      CQT firstTask = new CQT(audioSamples, sampleRate, samples,
+          sampleStart, sampleStart + (length / 2));
+      firstTask.fork();
+      CQT secondTask = new CQT(audioSamples, sampleRate, samples, sampleStart + (length / 2),
+          sampleEnd);
+      float[][] secondResult = secondTask.compute();
+      float[][] firstResult = firstTask.join();
+
+      return joinArrays(firstResult, secondResult);
+    }
+
+    private float[][] partialCQT() {
+      int length = sampleEnd - sampleStart;
+      float[][] result = new float[length][FREQUENCY_RESOLUTION];
+      double audioSamplesPerSample = (double) audioSamples.length / samples;
+
+      // for each frequency bin
+      for (int j = 0; j < FREQUENCY_RESOLUTION; j++) {
+        double frequency = frequencyAtBin(j);
+        int windowLength = windowLength(j, sampleRate);
+        // for each time sample
+        for (int i = sampleStart; i < sampleEnd; i++) {
+          int audioCenter = (int) (i * audioSamplesPerSample);
+          int audioStart = audioCenter - (windowLength / 2);
+          result[i - sampleStart][j] = transform(audioSamples, audioStart, windowLength, frequency, sampleRate) / windowLength;
+        }
+      }
+
+      return result;
+    }
+
+    private static float[][] joinArrays(float[][] a, float[][] b) {
+      float[][] result = new float[a.length + b.length][a[0].length];
+
+      for (int i = 0; i < a.length; i++)
+        System.arraycopy(a[i], 0, result[i], 0, a[0].length);
+      for (int i = 0; i < b.length; i++)
+        System.arraycopy(b[i], 0, result[i + a.length], 0, b[0].length);
+
+      return result;
+    }
   }
 
   // Performs transform for a specific frequency and time period.
@@ -132,11 +208,10 @@ public class Transform {
       long startTime = System.nanoTime();
       Reader reader = new Reader(args[0]);
       Transform transform = new Transform(reader);
-      System.out.println("Calculation time (nanoseconds): " + (System.nanoTime() - startTime));
+      System.out.println("Calculation time: " + ((System.nanoTime() - startTime) / 1000000000.0) + " seconds");
 
       System.out.println(
-          "Left channel frequency analysis (window length = " + (reader.getSampleRate()
-              / (int) TIME_RESOLUTION) + " samples):");
+          "Left channel frequency analysis:");
 
       System.out.print("    Frequencies:");
         for (int i = 0; i < FREQUENCY_RESOLUTION; i++) {
@@ -145,7 +220,7 @@ public class Transform {
       System.out.println();
 
       float[][] left = transform.getFrequencyAmplitudes(Channel.LEFT);
-      for (int i = 0; i < left.length; i++) {
+      for (int i = 0; i < left.length; i+=TIME_RESOLUTION) {
         System.out.print(
             "At time " + String.format("%8s", format.format(i / TIME_RESOLUTION) + ":"));
           for (int j = 0; j < left[i].length; j++) {
