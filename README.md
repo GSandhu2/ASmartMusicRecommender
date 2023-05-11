@@ -30,9 +30,9 @@ To install:
 - (Important) Email ethancar@uw.edu with your Spotify email so I can give you access to the Spotify API, otherwise you'll see an authorization error in the console. Spotify only allows "a maximum of 25 users in develoment mode".
 
 To build: Open Maven tab on the right and run ASmartMusicRecommender/Lifecycle/compile.
-To test: Right click on test folder and click "Run all tests".
+To test: Right click on test folder and click "Run all tests". Folder is located in ASmartMusicRecommender/src/test.
 
-To run: Run main method in frontend/Home.java.
+To run: Run main method in ASmartMusicRecommender/src/src/frontend/Home.java.
 
 Use cases: Right now, our primary use case is finding songs similar sounding to the song that you like.
 
