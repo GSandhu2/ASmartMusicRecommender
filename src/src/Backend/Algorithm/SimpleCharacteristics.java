@@ -1,8 +1,8 @@
 package Backend.Algorithm;
 
 import Backend.Algorithm.Reader.Channel;
+import Backend.Helper.PrintHelper;
 import java.io.IOException;
-import java.text.DecimalFormat;
 
 /**
  * @author Ethan Carnahan
@@ -142,7 +142,6 @@ public class SimpleCharacteristics {
 
   // Prints the average volume/DR information of the audio file in args[0].
   public static void main(String[] args) {
-    DecimalFormat format = new DecimalFormat("#####.00");
     try {
       Reader reader = new Reader(args[0]);
       Transform transform = new Transform(reader);
@@ -152,38 +151,16 @@ public class SimpleCharacteristics {
       System.out.println("Calculation time (nanoseconds): " + (System.nanoTime() - startTime));
 
       System.out.println("Left channel characteristics:");
-
-      System.out.print("Frequencies:");
-      for (int i = 0; i <= Transform.FREQUENCY_RESOLUTION; i++) {
-        System.out.print(" " + String.format("%8s", format.format(
-            Transform.BOTTOM_FREQUENCY * Math.pow(Transform.TOP_BOTTOM_RATIO,
-                (double) i / Transform.FREQUENCY_RESOLUTION))));
-      }
-      System.out.println();
-
-      System.out.print("     Volume:");
       double[] leftVolume = simpleCharacteristics.getAverageVolume(Channel.LEFT);
-      for (double volume : leftVolume)
-        System.out.print(" " + String.format("%8s", format.format(volume)));
-      System.out.println();
-
-      System.out.print("Vol. Change:");
       double[] leftVolumeChange = simpleCharacteristics.getAverageVolumeChange(Channel.LEFT);
-      for (double volume : leftVolumeChange)
-        System.out.print(" " + String.format("%8s", format.format(volume)));
-      System.out.println();
-
-      System.out.print(" Peak Ratio:");
       double[] leftRatios = simpleCharacteristics.getAveragePeakRatio(Channel.LEFT);
-      for (double ratio : leftRatios)
-        System.out.print(" " + String.format("%8s", format.format(ratio)));
-      System.out.println();
-
-      System.out.print("  Peak Rate:");
       double[] leftRates = simpleCharacteristics.getAveragePeakRate(Channel.LEFT);
-      for (double rate : leftRates)
-        System.out.print(" " + String.format("%8s", format.format(rate)));
-      System.out.println();
+
+      PrintHelper.printFrequencies();
+      PrintHelper.printValues("Volume", leftVolume);
+      PrintHelper.printValues("Vol. Change", leftVolumeChange);
+      PrintHelper.printValues("Peak Ratio", leftRatios);
+      PrintHelper.printValues("Peak Rate", leftRates);
 
     } catch (IOException e) {
       System.out.println(e.getMessage());

@@ -1,8 +1,8 @@
 package Backend.Algorithm;
 
 import Backend.Algorithm.Reader.Channel;
+import Backend.Helper.PrintHelper;
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveTask;
 
@@ -203,31 +203,18 @@ public class Transform {
 
   // Prints the frequency/amplitude information of the audio file in args[0]
   public static void main(String[] args) {
-    DecimalFormat format = new DecimalFormat("#####.00");
     try {
-      long startTime = System.nanoTime();
       Reader reader = new Reader(args[0]);
+      long startTime = System.nanoTime();
       Transform transform = new Transform(reader);
       System.out.println("Calculation time: " + ((System.nanoTime() - startTime) / 1000000000.0) + " seconds");
 
-      System.out.println(
-          "Left channel frequency analysis:");
+      System.out.println("Left channel frequency analysis:");
 
-      System.out.print("    Frequencies:");
-        for (int i = 0; i < FREQUENCY_RESOLUTION; i++) {
-            System.out.print(" " + String.format("%8s", format.format(frequencyAtBin(i))));
-        }
-      System.out.println();
-
+      PrintHelper.printFrequencies();
       float[][] left = transform.getFrequencyAmplitudes(Channel.LEFT);
-      for (int i = 0; i < left.length; i+=TIME_RESOLUTION) {
-        System.out.print(
-            "At time " + String.format("%8s", format.format(i / TIME_RESOLUTION) + ":"));
-          for (int j = 0; j < left[i].length; j++) {
-              System.out.print(" " + String.format("%8s", format.format(left[i][j])));
-          }
-        System.out.println();
-      }
+      for (int i = 0; i < left.length; i += TIME_RESOLUTION)
+        PrintHelper.printValues("T = " + PrintHelper.format.format(i / TIME_RESOLUTION), left[i]);
 
     } catch (IOException e) {
       System.out.println(e.getMessage());

@@ -1,6 +1,6 @@
 package Backend.Algorithm;
 
-import java.text.DecimalFormat;
+import Backend.Helper.PrintHelper;
 import java.util.Arrays;
 
 /**
@@ -95,27 +95,13 @@ public class Normalizer {
   // Test the effects of normalization on a perfectly flat frequency response.
   // Changing testVolume should have no effect. Changing targetVolume should.
   public static void main(String[] args) {
-    DecimalFormat format = new DecimalFormat("#####.00");
     double testVolume = 50;
 
     double[] volume = new double[Transform.FREQUENCY_RESOLUTION];
     Arrays.fill(volume, testVolume);
     double[] loudness = normalize(volume);
 
-    System.out.print("Frequencies:");
-    for (int i = 0; i <= Transform.FREQUENCY_RESOLUTION; i++) {
-      System.out.print(" " + String.format("%8s", format.format(
-          Transform.BOTTOM_FREQUENCY * Math.pow(Transform.TOP_BOTTOM_RATIO,
-              (double) i / Transform.FREQUENCY_RESOLUTION))));
-    }
-    System.out.println();
-
-    System.out.print("   Loudness:");
-    for (int i = 0; i < Transform.FREQUENCY_RESOLUTION; i++) {
-      System.out.print(" " + String.format("%8s", format.format(
-          loudness[i]
-      )));
-    }
-    System.out.println();
+    PrintHelper.printFrequencies();
+    PrintHelper.printValues("Loudness", loudness);
   }
 }

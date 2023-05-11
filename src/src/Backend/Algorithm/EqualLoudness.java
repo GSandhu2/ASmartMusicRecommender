@@ -1,6 +1,6 @@
 package Backend.Algorithm;
 
-import java.text.DecimalFormat;
+import Backend.Helper.PrintHelper;
 
 /**
  * @author Ethan Carnahan
@@ -28,9 +28,9 @@ public class EqualLoudness {
   //region Methods
   public static double phonsToDb(double phons, double frequency) {
     // Get constants
-    double valTf = interpolate(frequencies, Tf, frequency);
-    double valAf = interpolate(frequencies, af, frequency);
-    double valLu = interpolate(frequencies, Lu, frequency);
+    double valTf = interpolate(Tf, frequency);
+    double valAf = interpolate(af, frequency);
+    double valLu = interpolate(Lu, frequency);
 
     // Calculate Af term
     double a = 0.00447 * (Math.pow(10, (0.025 * phons) ) - 1.15);
@@ -45,9 +45,9 @@ public class EqualLoudness {
 
   public static double dbToPhons(double dB, double frequency) {
     // Get constants
-    double valTf = interpolate(frequencies, Tf, frequency);
-    double valAf = interpolate(frequencies, af, frequency);
-    double valLu = interpolate(frequencies, Lu, frequency);
+    double valTf = interpolate(Tf, frequency);
+    double valAf = interpolate(af, frequency);
+    double valLu = interpolate(Lu, frequency);
 
     // Calculate big terms
     double a = Math.pow(10, ( (valAf / 10) * (dB + valLu - 94) ) );
@@ -59,25 +59,25 @@ public class EqualLoudness {
   }
 
   // Used to interpolate for frequencies between/outside the frequencies array.
-  private static double interpolate(double[] inArray, double[] outArray, double inValue) {
+  private static double interpolate(double[] outArray, double frequency) {
     // Check array bounds
-    if (inValue < inArray[0])
+    if (frequency < frequencies[0])
       return outArray[0];
-    if (inValue > inArray[inArray.length-1])
+    if (frequency > frequencies[frequencies.length-1])
       return outArray[outArray.length-1];
 
     // Find first index in array equal or higher than given value.
     int index = 1;
-    while (index < inArray.length && inArray[index] < inValue)
+    while (index < frequencies.length && frequencies[index] < frequency)
       index++;
 
     // Use exact value if it matches array value.
-    if (inArray[index-1] == inValue)
+    if (frequencies[index-1] == frequency)
       return outArray[index-1];
 
     // Calculate where value is in-between array values.
-    double inStart = inArray[index-1], inEnd = inArray[index];
-    double startToEnd = (inValue - inStart) / (inEnd - inStart);
+    double inStart = frequencies[index-1], inEnd = frequencies[index];
+    double startToEnd = (frequency - inStart) / (inEnd - inStart);
 
     double outStart = outArray[index-1], outEnd = outArray[index];
     double outDifference = outEnd - outStart;
@@ -86,45 +86,20 @@ public class EqualLoudness {
   }
   //endregion
 
-  // Print the equal loudness contour of the 0, 50, and 100 phon lines.
+  // Print the equal loudness contours of the 0, 10, 20, ..., 90 phon lines.
   public static void main(String[] args) {
-    DecimalFormat format = new DecimalFormat("#####.00");
-    System.out.print("Frequencies:");
-    for (int i = 0; i < Transform.FREQUENCY_RESOLUTION; i++) {
-      System.out.print(" " + String.format("%8s", format.format(
-          Transform.BOTTOM_FREQUENCY * Math.pow(Transform.TOP_BOTTOM_RATIO,
-              (double) i / Transform.FREQUENCY_RESOLUTION))));
+    double[][] phonLines = new double[10][Transform.FREQUENCY_RESOLUTION];
+    for (int i = 0; i < 100; i += 10) {
+      for (int j = 0; j < Transform.FREQUENCY_RESOLUTION; j++) {
+        double frequency = Transform.BOTTOM_FREQUENCY * Math.pow(Transform.TOP_BOTTOM_RATIO,
+            (double) j / Transform.FREQUENCY_RESOLUTION);
+        phonLines[i/10][j] = phonsToDb(i, frequency);
+      }
     }
-    System.out.println();
 
-    System.out.print("     0 phon:");
-    for (int i = 0; i < Transform.FREQUENCY_RESOLUTION; i++) {
-      double frequency = Transform.BOTTOM_FREQUENCY * Math.pow(Transform.TOP_BOTTOM_RATIO,
-          (double) i / Transform.FREQUENCY_RESOLUTION);
-      System.out.print(" " + String.format("%8s", format.format(
-          phonsToDb(0, frequency)
-      )));
+    PrintHelper.printFrequencies();
+    for (int i = 0; i < 100; i += 10) {
+      PrintHelper.printValues(i + " phons", phonLines[i/10]);
     }
-    System.out.println();
-
-    System.out.print("    50 phon:");
-    for (int i = 0; i < Transform.FREQUENCY_RESOLUTION; i++) {
-      double frequency = Transform.BOTTOM_FREQUENCY * Math.pow(Transform.TOP_BOTTOM_RATIO,
-          (double) i / Transform.FREQUENCY_RESOLUTION);
-      System.out.print(" " + String.format("%8s", format.format(
-          phonsToDb(50, frequency)
-      )));
-    }
-    System.out.println();
-
-    System.out.print("   100 phon:");
-    for (int i = 0; i < Transform.FREQUENCY_RESOLUTION; i++) {
-      double frequency = Transform.BOTTOM_FREQUENCY * Math.pow(Transform.TOP_BOTTOM_RATIO,
-          (double) i / Transform.FREQUENCY_RESOLUTION);
-      System.out.print(" " + String.format("%8s", format.format(
-          phonsToDb(100, frequency)
-      )));
-    }
-    System.out.println();
   }
 }
