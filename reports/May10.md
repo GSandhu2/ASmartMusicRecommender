@@ -15,6 +15,8 @@ Team Report:
         - Add JUnit tests for ParseJson. (Ethan)
         - Spotify API: Recommend command. (Eric)
         - Spotify API: Get song names from track IDs. (Eric)
+        - Spotify API: Displaying reccomended song links in console. (Eric + Ethan)
     - Frontend:
         - Display match results in UI. (Arnav)
         - Clickable links. (Arnav)
+        - Document the UI to make it easier to read (Arnav)
