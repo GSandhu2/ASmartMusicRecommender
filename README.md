@@ -27,7 +27,6 @@ To install:
 - Link: https://www.jetbrains.com/idea/download/
 - Open IntelliJ and use "Get from VCS" to clone repository.
 - Go to File -> Project Structure and set Java level to 19 (may also need to select/install SDK).
-- (Important) Email ethancar@uw.edu with your Spotify email so I can give you access to the Spotify API, otherwise you'll see an authorization error in the console. Spotify only allows "a maximum of 25 users in develoment mode".
 
 To build: Open Maven tab on the right and run ASmartMusicRecommender/Lifecycle/compile.
 To test: Right click on test folder and click "Run all tests". Folder is located in ASmartMusicRecommender/src/test.
