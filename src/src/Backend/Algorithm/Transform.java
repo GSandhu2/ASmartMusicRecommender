@@ -25,6 +25,7 @@ public class Transform {
   public static final double TOP_FREQUENCY = 20480; // Slightly over highest audible pitch, but is a convenient 20 * 2^10.
   public static final double TOP_BOTTOM_RATIO = TOP_FREQUENCY / BOTTOM_FREQUENCY;
   private static final double TWO_PI = Math.PI * 2.0;
+  private static final float HALF_PI = (float)Math.PI / 2.0f;
 
   // First dimension is time index, second dimension is frequency index, value is amplitude.
   private final float[][] leftFrequencyAmplitudes, rightFrequencyAmplitudes;
@@ -164,8 +165,8 @@ public class Transform {
     for (int i = start; i < end; i++) {
       double angle = (i - start) * TWO_PI * frequency / sampleRate;
       double window = window(i - start, length);
-      realSum += window * mirrorBounds(audioSamples, i) * Math.cos(angle);
-      complexSum += window * mirrorBounds(audioSamples, i) * Math.sin(angle);
+      realSum += window * mirrorBounds(audioSamples, i) * FasterTrig.cos(angle);
+      complexSum += window * mirrorBounds(audioSamples, i) * FasterTrig.sin(angle);
     }
 
     return (float) Math.sqrt((realSum * realSum) + (complexSum * complexSum));
@@ -183,8 +184,8 @@ public class Transform {
   // See https://en.wikipedia.org/wiki/Window_function#Nuttall_window,_continuous_first_derivative
   public static double window(int index, int length) {
     double angle = TWO_PI * index / length;
-    return ((0.355768) - (0.4891775 * Math.cos(angle)) + (0.1365995 * Math.cos(2 * angle)) -
-        (0.0106411 * Math.cos(3 * angle))) / 0.355768;
+    return ((0.355768) - (0.4891775 * FasterTrig.cos(angle)) + (0.1365995 * FasterTrig.cos(2 * angle)) -
+        (0.0106411 * FasterTrig.cos(3 * angle))) / 0.355768;
   }
 
   // Allows you to go out of bounds by mirroring the index back in-bounds and inverting the sample value.
@@ -199,6 +200,29 @@ public class Transform {
       return (short) (-audioSamples[(2 * audioSamples.length) - index - 2] & 0xFFFF);
     }
   }
+
+  // Precalculate lots of sine/cosine values to reduce math to array lookups.
+  private static class FasterTrig {
+    // Higher number = more accurate but uses more memory.
+    private static final int ANGLE_RESOLUTION = 10000; // 4kB.
+    private static final float[] angleValues = generateAngleValues();
+
+    private static float sin(double radians) {
+      int index = (int)(radians * ANGLE_RESOLUTION / TWO_PI) % ANGLE_RESOLUTION;
+      return angleValues[index];
+    }
+
+    private static float cos(double radians) {
+      return sin(radians + HALF_PI);
+    }
+
+    private static float[] generateAngleValues() {
+      float[] result = new float[ANGLE_RESOLUTION];
+      for (int i = 0; i < ANGLE_RESOLUTION; i++)
+        result[i] = (float)Math.sin(TWO_PI * i / ANGLE_RESOLUTION);
+      return result;
+    }
+  }
   //endregion
 
   // Prints the frequency/amplitude information of the audio file in args[0]
@@ -210,7 +234,6 @@ public class Transform {
       System.out.println("Calculation time: " + ((System.nanoTime() - startTime) / 1000000000.0) + " seconds");
 
       System.out.println("Left channel frequency analysis:");
-
       PrintHelper.printFrequencies();
       float[][] left = transform.getFrequencyAmplitudes(Channel.LEFT);
       for (int i = 0; i < left.length; i += TIME_RESOLUTION)
