@@ -18,3 +18,4 @@ Team Report:
     - Frontend:
         - Display match results in UI. (Arnav)
         - Clickable links. (Arnav)
+        - Document the UI to make it easier to read
