@@ -24,13 +24,13 @@ public class SimpleCharacteristics {
     float[][] left = transform.getFrequencyAmplitudes(Channel.LEFT);
     float[][] right = transform.getFrequencyAmplitudes(Channel.RIGHT);
 
-    averageLeftVolume = calculateVolume(left);
+    averageLeftVolume = Normalizer.normalize(calculateVolume(left));
     averageLeftVolumeChange = calculateVolumeChange(left, duration);
     double[][] averageLeftPeakInfo = calculatePeakInfo(left, duration);
     averageLeftPeakRatio = averageLeftPeakInfo[0];
     averageLeftPeakRate = averageLeftPeakInfo[1];
     if (right != null) {
-      averageRightVolume = calculateVolume(right);
+      averageRightVolume = Normalizer.normalize(calculateVolume(right));
       averageRightVolumeChange = calculateVolumeChange(right, duration);
       double[][] averageRightPeakInfo = calculatePeakInfo(right, duration);
       averageRightPeakRatio = averageRightPeakInfo[0];
