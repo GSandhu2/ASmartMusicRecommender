@@ -121,24 +121,27 @@ public class SimpleAnalysis implements SoundAnalysis {
 
   // Compares each sound file in args to each other and sorts results by match percentage.
   public static void main(String[] args) {
-    if (args.length < 2) {
-      System.out.println("SimpleAnalysis: Needs at least two songs in args[] to run main method.");
+    List<SoundAnalysis> analyses = new ArrayList<>(args.length);
+    for (String file : args) {
+      try {
+        analyses.add(new SimpleAnalysis(file));
+      } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("SimpleAnalysis: Failed to scan file - " + e.getMessage() + "\n");
+      }
+    }
+
+    if (analyses.size() < 2) {
+      System.out.println("SimpleAnalysis: Needs at least two scan-able songs in args[] to run main method.");
       System.exit(1);
     }
-    try {
-      List<SoundAnalysis> analyses = new ArrayList<>(args.length);
-      for (String file : args)
-        analyses.add(new SimpleAnalysis(file));
 
-      List<CompareResult> results = AnalysisCompare.compareAnalyses(analyses);
-      for (CompareResult result : results) {
-        SimpleAnalysis a = (SimpleAnalysis)result.a;
-        SimpleAnalysis b = (SimpleAnalysis)result.b;
-        System.out.println(a.fileName + " compared to " + b.fileName + " = " +
-            PrintHelper.format.format(result.result * 100) + "% match");
-      }
-    } catch (IOException e) {
-      System.out.println("SimpleAnalysis: File error - " + e.getMessage());
+    List<CompareResult> results = AnalysisCompare.compareAnalyses(analyses);
+    for (CompareResult result : results) {
+      SimpleAnalysis a = (SimpleAnalysis)result.a;
+      SimpleAnalysis b = (SimpleAnalysis)result.b;
+      System.out.println(a.fileName + " compared to " + b.fileName + " = " +
+              PrintHelper.format.format(result.result * 100) + "% match");
     }
   }
 }
