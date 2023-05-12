@@ -8,7 +8,7 @@ import java.io.IOException;
  * @author Ethan Carnahan
  * Basic sound analysis that calculates the perceived frequency balance and dynamics of a song.
  * How to use: Pass in a Transform object and duration, and call get methods for volume/dynamics information.
- * For now, more dynamic means the rate of change in volume increases as a sound gets louder.
+ * For now, more dynamic means the rate of change in volume.
  * In the future, more dynamic will mean the bigger peaks in volume are narrower in time.
  */
 public class SimpleCharacteristics {
@@ -17,13 +17,12 @@ public class SimpleCharacteristics {
   private final double[] averageLeftVolume, averageRightVolume;
   // Average rate of volume change per second for each frequency bin.
   private final double[] averageLeftDynamicRating, averageRightDynamicRating;
-  private static final double globalDynamicMultiplier = 0.001;
 
   public SimpleCharacteristics(Transform transform) {
     float[][] left = Normalizer.normalizeTransform(transform.getFrequencyAmplitudes(Channel.LEFT));
     float[][] right = Normalizer.normalizeTransform(transform.getFrequencyAmplitudes(Channel.RIGHT));
 
-    System.out.println("SimpleCharacteristics: Calculating characteristics");
+    System.out.println("SimpleCharacteristics: Calculating characteristics\n");
 
     averageLeftVolume = calculateVolume(left);
     averageLeftDynamicRating = calculateDynamicRating(left);
@@ -73,10 +72,10 @@ public class SimpleCharacteristics {
 
       // for each time
       for (int i = 1; i < channel.length; i++) {
-        result[j] += channel[i - 1][j] * Math.abs(channel[i][j] - channel[i - 1][j]);
+        result[j] += Math.abs(channel[i][j] - channel[i - 1][j]);
       }
 
-      result[j] *= globalDynamicMultiplier / channel.length;
+      result[j] /= channel.length;
     }
 
     return result;
