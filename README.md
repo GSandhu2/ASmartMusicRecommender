@@ -28,8 +28,21 @@ To install:
 - Open IntelliJ and use "Get from VCS" to clone repository.
 - Go to File -> Project Structure and set Java level to 19 (may also need to select/install SDK).
 
-To build: Open Maven tab on the right and run ASmartMusicRecommender/Lifecycle/compile.
-To test: Right click on test folder and click "Run all tests". Folder is located in ASmartMusicRecommender/src/test.
+To build: 
+- Open Maven tab on the right 
+<img width="577" alt="Screen Shot 2023-05-11 at 5 27 50 PM" src="https://github.com/DreamRealitii/ASmartMusicRecommender/assets/100888811/05cb8586-e306-4cdf-957e-9c850a16ef25">
+
+- Run ASmartMusicRecommender/Lifecycle/compile by right clicking
+<img width="420" alt="Screen Shot 2023-05-11 at 5 29 50 PM" src="https://github.com/DreamRealitii/ASmartMusicRecommender/assets/100888811/2a46176c-823a-4d1f-8978-d9929124ad2f">
+
+To test:
+- Right click on test folder and click "Run all tests". Folder is located in ASmartMusicRecommender/src/test.
+<img width="420" alt="Screen Shot 2023-05-11 at 5 30 12 PM" src="https://github.com/DreamRealitii/ASmartMusicRecommender/assets/100888811/511f14ba-96e3-4f52-87d1-7f598b296be8">
+
+- You should expect it look similar to below:
+<img width="643" alt="Screen Shot 2023-05-11 at 5 35 10 PM" src="https://github.com/DreamRealitii/ASmartMusicRecommender/assets/100888811/3dc0fe6f-58fc-486f-9057-d97be43954b3">
+
+- Additionally, if you want to view the tests, click on the test folder shown previously and open the tests folder inside
 
 To run: 
 - Run main method in ASmartMusicRecommender/src/src/frontend/Home.java.
