@@ -17,25 +17,32 @@ Code Layout:
     - Graphics - Images and fonts used in the program.
 
 # Information for Alpha Release: 
-Demo functionality:
+## Demo functionality:
 - Matches Spotify songs to ~50 other Spotify songs at random.
 - UI is working, but prints match results to console.
 - No local sound analysis for now.
 
-To install:
+## To install:
 - Install most recent available version of IntelliJ (either community or ultimate version works)
 - Link: https://www.jetbrains.com/idea/download/
+- Copy the link in the github repository under the "Code" button.
 - Open IntelliJ and use "Get from VCS" to clone repository.
-- Go to File -> Project Structure and set Java level to 19 (may also need to select/install SDK).
+<img width="601" alt="Screen Shot 2023-05-11 at 5 39 02 PM" src="https://github.com/DreamRealitii/ASmartMusicRecommender/assets/100888811/cd0c0c67-6afb-4c55-b2a6-ab20e147dc43">
 
-To build: 
+- Go to File -> Project Structure and set Java level to 19 (may also need to select/install SDK).
+<img width="625" alt="Screen Shot 2023-05-11 at 5 43 59 PM" src="https://github.com/DreamRealitii/ASmartMusicRecommender/assets/100888811/6db54395-c559-474b-857c-df969564dbcf">
+
+**Java language level should say 19**!
+
+
+## To build: 
 - Open Maven tab on the right 
 <img width="577" alt="Screen Shot 2023-05-11 at 5 27 50 PM" src="https://github.com/DreamRealitii/ASmartMusicRecommender/assets/100888811/05cb8586-e306-4cdf-957e-9c850a16ef25">
 
 - Run ASmartMusicRecommender/Lifecycle/compile by right clicking
 <img width="420" alt="Screen Shot 2023-05-11 at 5 29 50 PM" src="https://github.com/DreamRealitii/ASmartMusicRecommender/assets/100888811/2a46176c-823a-4d1f-8978-d9929124ad2f">
 
-To test:
+## To test:
 - Right click on test folder and click "Run all tests". Folder is located in ASmartMusicRecommender/src/test.
 <img width="420" alt="Screen Shot 2023-05-11 at 5 30 12 PM" src="https://github.com/DreamRealitii/ASmartMusicRecommender/assets/100888811/511f14ba-96e3-4f52-87d1-7f598b296be8">
 
@@ -44,7 +51,7 @@ To test:
 
 - Additionally, if you want to view the tests, click on the test folder shown previously and open the tests folder inside
 
-To run: 
+## To run: 
 - Run main method in ASmartMusicRecommender/src/src/frontend/Home.java.
 - When it asks for a Spotify username type in "31gy6dsm5x3oqdl5i6djftgvycii"
 - If it opens spotify in your browser the password is "password123"
@@ -53,7 +60,8 @@ To run:
 - The links in the console are the links that will take you to the song in Spotify.
 - The numbers next to the links are the analysis results based on our sound analysis algorithm.
 
-Use cases: Right now, our primary use case is finding songs similar sounding to the song that you like.
+## Use cases:
+    Right now, our primary use case is finding songs similar sounding to the song that you like.
 
 # Information for users/developers:
 To develop:
