@@ -22,9 +22,12 @@ public class SimpleAnalysis implements SoundAnalysis {
   private final SimpleCharacteristics characteristics;
   private final String filePath, fileName;
   // Multiplies the power of loudness/dynamics differences on the match result.
-  // Lower values = higher match result for the same comparison.
-  private static final double LOUDNESS_WEIGHT = 0.0000002, DYNAMICS_WEIGHT = 0.0000005;
-  private static final double DIFFERENCE_EXPONENT = 2.0;
+  // Lower values = higher match result.
+  private static final double LOUDNESS_WEIGHT = 0.0000001, DYNAMICS_WEIGHT = 0.00000002;
+  // Higher values = Bigger difference between big differences and small differences.
+  private static final double LOUDNESS_EXPONENT = 2.0, DYNAMICS_EXPONENT = 2.0;
+  // Multiplies the power of differences on individual frequency bins.
+  private static final double RECURSIVE_WEIGHT = 0.1;
   // Multiplies arctan bounds from pi/2 to 1.
   private static final double ARCTAN_MULTIPLIER = 2.0 / Math.PI;
 
@@ -60,7 +63,7 @@ public class SimpleAnalysis implements SoundAnalysis {
 
     // if both stereo
     if (thisRightLoudness != null && otherRightLoudness != null)
-      return stereoCompare(thisLeftLoudness, otherLeftLoudness, thisLeftDynamics, thisRightDynamics,
+      return stereoCompare(thisLeftLoudness, otherLeftLoudness, thisLeftDynamics, otherLeftDynamics,
           thisRightLoudness, otherRightLoudness, thisRightDynamics, otherRightDynamics);
     // if one stereo and one mono
     if (thisRightLoudness != null)
@@ -87,12 +90,10 @@ public class SimpleAnalysis implements SoundAnalysis {
   // L/D = Loudness/Dynamics
   // 1/2 = Left/Right Channels
   private static double monoCompare(double[] aL, double[] bL, double[] aD, double[] bD) {
-    double difference = 0.0;
+    double loudnessDifference = recursiveSumDifferences(aL, bL, 0, aL.length, LOUDNESS_EXPONENT) * LOUDNESS_WEIGHT;
+    double dynamicsDifference = recursiveSumDifferences(aD, bD, 0, aD.length, DYNAMICS_EXPONENT) * DYNAMICS_WEIGHT;
 
-    difference += sumDifferences(aL, bL) * LOUDNESS_WEIGHT;
-    difference += sumDifferences(aD, bD) * DYNAMICS_WEIGHT;
-
-    difference = ARCTAN_MULTIPLIER * Math.atan(difference);
+    double difference = ARCTAN_MULTIPLIER * Math.atan(loudnessDifference + dynamicsDifference);
 
     return 1.0 - difference;
   }
@@ -111,10 +112,25 @@ public class SimpleAnalysis implements SoundAnalysis {
     return (0.5 * leftCompare) + (0.5 * rightCompare);
   }
 
-  private static double sumDifferences(double[] a, double[] b) {
+  // Sums a/b together and calculates the sum difference, then splits a/b to do it again.
+  private static double recursiveSumDifferences(double[] a, double[] b, int start, int length, double exp) {
+    if (length == 0 || start >= a.length)
+      return 0.0;
+    if (length == 1)
+      return Math.pow(Math.abs(a[start] - b[start]), exp);
+    double result = Math.pow(Math.abs(sumArray(a, start, length) - sumArray(b, start, length)), exp);
+    int nextLength = (int)Math.ceil((double)length / 2.0);
+    int end = start + length;
+    for (int i = start; i < end; i += nextLength)
+      result += recursiveSumDifferences(a, b, i, nextLength, exp) * RECURSIVE_WEIGHT;
+    return result;
+  }
+
+  private static double sumArray(double[] array, int start, int length) {
     double result = 0.0;
-    for (int i = 0; i < a.length; i++)
-      result += Math.pow(Math.abs(a[i] - b[i]), DIFFERENCE_EXPONENT);
+    int end = Math.min(start + length, array.length);
+    for (int i = start; i < end; i++)
+      result += array[i];
     return result;
   }
   //endregion
