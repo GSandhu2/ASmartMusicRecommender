@@ -22,6 +22,8 @@ public class Normalizer {
     if (transform == null)
       return null;
 
+    System.out.println("Normalizer: Running normalization on transform of " + transform.length + " samples");
+
     // Copy array
     float[][] result = new float[transform.length][transform[0].length];
     for (int i = 0; i < transform.length; i++)

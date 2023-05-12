@@ -31,6 +31,7 @@ public class Reader {
 
   public Reader(String mp3Filepath) throws IOException {
     // Decode mp3 file.
+    System.out.println("Reader: Reading file " + mp3Filepath);
     Sound sound;
     List<Byte> soundBytes = new ArrayList<>(BUFFER_SIZE);
     try {

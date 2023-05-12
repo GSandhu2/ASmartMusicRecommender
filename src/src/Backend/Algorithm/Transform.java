@@ -31,6 +31,8 @@ public class Transform {
   private final float[][] leftFrequencyAmplitudes, rightFrequencyAmplitudes;
 
   public Transform(Reader audio) {
+    System.out.println("Transform: Running transform on " + (int)audio.getDuration() + " seconds of audio");
+
     // Check audio length
     int timeSamples = (int) (TIME_RESOLUTION * audio.getDuration());
       if (timeSamples < 1) {

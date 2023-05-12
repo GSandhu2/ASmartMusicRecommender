@@ -24,6 +24,8 @@ public class SimpleCharacteristics {
     float[][] left = Normalizer.normalizeTransform(transform.getFrequencyAmplitudes(Channel.LEFT));
     float[][] right = Normalizer.normalizeTransform(transform.getFrequencyAmplitudes(Channel.RIGHT));
 
+    System.out.println("SimpleCharacteristics: Calculating characteristics");
+
     averageLeftVolume = calculateVolume(left);
     averageLeftVolumeChange = calculateVolumeChange(left, duration);
     double[][] averageLeftPeakInfo = calculatePeakInfo(left, duration);
