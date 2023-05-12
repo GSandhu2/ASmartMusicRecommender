@@ -21,16 +21,16 @@ public class SimpleCharacteristics {
   private final double[] averageLeftPeakRate, averageRightPeakRate;
 
   public SimpleCharacteristics(Transform transform, double duration) {
-    float[][] left = transform.getFrequencyAmplitudes(Channel.LEFT);
-    float[][] right = transform.getFrequencyAmplitudes(Channel.RIGHT);
+    float[][] left = Normalizer.normalizeTransform(transform.getFrequencyAmplitudes(Channel.LEFT));
+    float[][] right = Normalizer.normalizeTransform(transform.getFrequencyAmplitudes(Channel.RIGHT));
 
-    averageLeftVolume = Normalizer.normalize(calculateVolume(left));
+    averageLeftVolume = calculateVolume(left);
     averageLeftVolumeChange = calculateVolumeChange(left, duration);
     double[][] averageLeftPeakInfo = calculatePeakInfo(left, duration);
     averageLeftPeakRatio = averageLeftPeakInfo[0];
     averageLeftPeakRate = averageLeftPeakInfo[1];
     if (right != null) {
-      averageRightVolume = Normalizer.normalize(calculateVolume(right));
+      averageRightVolume = calculateVolume(right);
       averageRightVolumeChange = calculateVolumeChange(right, duration);
       double[][] averageRightPeakInfo = calculatePeakInfo(right, duration);
       averageRightPeakRatio = averageRightPeakInfo[0];
@@ -92,13 +92,13 @@ public class SimpleCharacteristics {
         result[i] += Math.abs(channel[j][i] - channel[j-1][i]);
       }
 
-      result[i] /= duration;
+      result[i] /= (duration * Transform.TIME_RESOLUTION);
     }
 
     return result;
   }
 
-  // result[0] = peak ratios, result[1] = peak rates.
+  // result[0] = peak differences, result[1] = peak rates.
   private static double[][] calculatePeakInfo(float[][] channel, double duration) {
     double[][] result = new double[2][channel[0].length];
 
@@ -148,7 +148,7 @@ public class SimpleCharacteristics {
       long startTime = System.nanoTime();
       SimpleCharacteristics simpleCharacteristics = new SimpleCharacteristics(transform,
           reader.getDuration());
-      System.out.println("Calculation time (nanoseconds): " + (System.nanoTime() - startTime));
+      System.out.println("Calculation time: " + ((System.nanoTime() - startTime) / 1000000000.0) + " seconds");
 
       System.out.println("Left channel characteristics:");
       double[] leftVolume = simpleCharacteristics.getAverageVolume(Channel.LEFT);
@@ -157,7 +157,7 @@ public class SimpleCharacteristics {
       double[] leftRates = simpleCharacteristics.getAveragePeakRate(Channel.LEFT);
 
       PrintHelper.printFrequencies();
-      PrintHelper.printValues("Volume", leftVolume);
+      PrintHelper.printValues("Loudness", leftVolume);
       PrintHelper.printValues("Vol. Change", leftVolumeChange);
       PrintHelper.printValues("Peak Ratio", leftRatios);
       PrintHelper.printValues("Peak Rate", leftRates);
