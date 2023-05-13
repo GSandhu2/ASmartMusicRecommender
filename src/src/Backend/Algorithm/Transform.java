@@ -16,11 +16,11 @@ public class Transform {
 
   //region Fields and public methods
   // The sample rate of the fourier analysis in samples per second.
-  public static final double TIME_RESOLUTION = 20;
+  public static final double TIME_RESOLUTION = 40;
   // There are this many frequency bins between the top/bottom frequency.
-  public static final int FREQUENCY_RESOLUTION = 120; // 10 octaves * 12 notes per octaves.
+  public static final int FREQUENCY_RESOLUTION = 60; // 10 octaves * 6 bins per octave.
   // Smaller number = less leaking between frequency bins but takes longer to calculate.
-  private static final double BOTTOM_FILTER_WIDTH = 2;
+  private static final double BOTTOM_FILTER_WIDTH = 4;
   public static final double BOTTOM_FREQUENCY = 20; // Lowest audible pitch in Hz.
   public static final double TOP_FREQUENCY = 20480; // Slightly over highest audible pitch, but is a convenient 20 * 2^10.
   public static final double TOP_BOTTOM_RATIO = TOP_FREQUENCY / BOTTOM_FREQUENCY;
