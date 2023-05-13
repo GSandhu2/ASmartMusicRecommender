@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class SimpleAnalysis implements SoundAnalysis {
   //region Fields and public methods
-  private final SimpleCharacteristics characteristics;
+  private SimpleCharacteristics characteristics;
   private final String filePath, fileName;
   // Multiplies the power of loudness/dynamics differences on the match result.
   // Lower values = higher match result.
@@ -31,7 +31,8 @@ public class SimpleAnalysis implements SoundAnalysis {
   // Multiplies arctan bounds from pi/2 to 1.
   private static final double ARCTAN_MULTIPLIER = 2.0 / Math.PI;
 
-  public SimpleAnalysis(String filePath) throws IOException {
+  // save/load will save a new analysis and load previously analyzed songs.
+  public SimpleAnalysis(String filePath, boolean load, boolean save) throws IOException {
     this.filePath = filePath;
 
     try {
@@ -41,9 +42,25 @@ public class SimpleAnalysis implements SoundAnalysis {
       throw new IOException("SimpleAnalysis: Invalid filepath - " + e.getMessage());
     }
 
+    String savePath = System.getProperty("user.dir") + "/SavedAnalysis/" + fileName + ".simple";
+    if (load) {
+      System.out.println("SimpleAnalysis: Loading analysis for " + fileName);
+      try {
+        this.characteristics = SimpleCharacteristics.load(savePath);
+        return;
+      } catch (IOException e) {
+        System.out.println("SimpleAnalysis: Failed to load file - " + e.getMessage());
+      }
+    }
+
+    System.out.println("SimpleAnalysis: Analysing new song " + fileName);
     Reader reader = new Reader(filePath);
     Transform transform = new Transform(reader);
     this.characteristics = new SimpleCharacteristics(transform);
+    if (save) {
+      System.out.println("SimpleAnalysis: Saving analysis to " + savePath);
+      this.characteristics.write(savePath);
+    }
   }
 
   @Override
@@ -140,7 +157,7 @@ public class SimpleAnalysis implements SoundAnalysis {
     List<SoundAnalysis> analyses = new ArrayList<>(args.length);
     for (String file : args) {
       try {
-        analyses.add(new SimpleAnalysis(file));
+        analyses.add(new SimpleAnalysis(file, true, true));
       } catch (Exception e) {
         e.printStackTrace();
         System.out.println("SimpleAnalysis: Failed to scan file - " + e.getMessage() + "\n");

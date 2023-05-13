@@ -2,7 +2,8 @@ package Backend.Algorithm;
 
 import Backend.Algorithm.Reader.Channel;
 import Backend.Helper.PrintHelper;
-import java.io.IOException;
+
+import java.io.*;
 
 /**
  * @author Ethan Carnahan
@@ -35,12 +36,72 @@ public class SimpleCharacteristics {
     }
   }
 
+  // Used for loading.
+  private SimpleCharacteristics(double[] averageLeftVolume, double[] averageRightVolume,
+  double[] averageLeftDynamicRating, double[] averageRightDynamicRating) {
+    this.averageLeftVolume = averageLeftVolume;
+    this.averageRightVolume = averageRightVolume;
+    this.averageLeftDynamicRating = averageLeftDynamicRating;
+    this.averageRightDynamicRating = averageRightDynamicRating;
+  }
+
   public double[] getAverageVolume(Channel channel) {
     return (channel == Channel.LEFT) ? averageLeftVolume : averageRightVolume;
   }
 
   public double[] getDynamicRating(Channel channel) {
     return (channel == Channel.LEFT) ? averageLeftDynamicRating : averageRightDynamicRating;
+  }
+
+  public void write(String filepath) throws IOException {
+    File file = new File(filepath);
+    file.createNewFile();
+    BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+
+    writer.write(averageRightVolume != null ? "Stereo" : "Mono");
+    writer.newLine();
+    writeArray(writer, averageLeftVolume);
+    writeArray(writer, averageLeftDynamicRating);
+    if (averageRightVolume != null) {
+      writeArray(writer, averageRightVolume);
+      writeArray(writer, averageRightDynamicRating);
+    }
+
+    writer.flush();
+    writer.close();
+  }
+
+  private static void writeArray(BufferedWriter writer, double[] array) throws IOException {
+    for (double value : array) {
+      writer.write(String.valueOf(value));
+      writer.newLine();
+    }
+  }
+
+  public static SimpleCharacteristics load(String filepath) throws IOException {
+    BufferedReader reader = new BufferedReader(new FileReader(filepath));
+
+    boolean stereo = reader.readLine().equals("Stereo");
+
+    double[] lv = loadArray(reader, Transform.FREQUENCY_RESOLUTION);
+    double[] ld = loadArray(reader, Transform.FREQUENCY_RESOLUTION);
+    double[] rv, rd;
+    if (stereo) {
+      rv = loadArray(reader, Transform.FREQUENCY_RESOLUTION);
+      rd = loadArray(reader, Transform.FREQUENCY_RESOLUTION);
+    } else {
+      rv = null;
+      rd = null;
+    }
+
+    return new SimpleCharacteristics(lv, rv, ld, rd);
+  }
+
+  private static double[] loadArray(BufferedReader reader, int length) throws IOException {
+    double[] result = new double[length];
+    for (int i = 0; i < length; i++)
+      result[i] = Double.parseDouble(reader.readLine());
+    return result;
   }
   //endregion
 
