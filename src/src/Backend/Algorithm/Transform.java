@@ -167,8 +167,9 @@ public class Transform {
     for (int i = start; i < end; i++) {
       double angle = (i - start) * TWO_PI * frequency / sampleRate;
       double window = window(i - start, length);
-      realSum += window * mirrorBounds(audioSamples, i) * FasterTrig.cos(angle);
-      complexSum += window * mirrorBounds(audioSamples, i) * FasterTrig.sin(angle);
+      short sample = mirrorBounds(audioSamples, i);
+      realSum += window * sample * FasterTrig.cos(angle);
+      complexSum += window * sample * FasterTrig.sin(angle);
     }
 
     return (float) Math.sqrt((realSum * realSum) + (complexSum * complexSum));
