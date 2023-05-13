@@ -4,7 +4,9 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Calls CompareTo on a list of sound analyses and returns a sorted list of song pairs sorted by match value.
@@ -23,7 +25,7 @@ public class AnalysisCompare {
   }
 
   public static List<CompareResult> compareAnalyses(List<SoundAnalysis> analyses) {
-    List<CompareResult> result = new ArrayList<>(analyses.size());
+    List<CompareResult> result = new ArrayList<>(analyses.size() * analyses.size() / 2);
 
     // gather results
     for (int i = 0; i < analyses.size(); i++)
@@ -50,6 +52,43 @@ public class AnalysisCompare {
     Collections.reverse(result);
 
     return result;
+  }
+
+  // Filter list so only the most and least similar match to each song is displayed.
+  // Reduces the results size from 0.5n^2 down to 2n at most.
+  public static List<CompareResult> mostAndLeastSimilar(List<CompareResult> matches) {
+    Set<CompareResult> result = new HashSet<>();
+
+    // get set of sound analyses
+    Set<SoundAnalysis> set = new HashSet<>();
+    for (CompareResult match : matches)
+      set.add(match.a);
+
+    // gather results
+    for (SoundAnalysis song : set) {
+      // get the most similar match
+      for (int i = 0; i < matches.size(); i++) {
+        if (matches.get(i).a.equals(song) || matches.get(i).b.equals(song)) {
+          result.add(matches.get(i));
+          break;
+        }
+      }
+
+      // get the least similar match
+      for (int i = matches.size() - 1; i >= 0; i--) {
+        if (matches.get(i).a.equals(song) || matches.get(i).b.equals(song)) {
+          result.add(matches.get(i));
+          break;
+        }
+      }
+    }
+
+    // sort results
+    List<CompareResult> resultList = new ArrayList<>(result);
+    resultList.sort(Comparator.comparingDouble(o -> o.result));
+    Collections.reverse(resultList);
+
+    return resultList;
   }
 
   // Test running compareAnalyses with RandomAnalysis and print results.

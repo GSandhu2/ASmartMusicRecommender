@@ -180,6 +180,7 @@ public class SimpleAnalysis implements SoundAnalysis {
     long startTime = System.nanoTime();
     List<CompareResult> results = AnalysisCompare.compareAnalyses(analyses);
     System.out.println("\nCalculation time: " + ((System.nanoTime() - startTime) / 1000000000.0) + " seconds");
+    results = AnalysisCompare.mostAndLeastSimilar(results);
     Collections.reverse(results);
     for (CompareResult result : results) {
       SimpleAnalysis a = (SimpleAnalysis)result.a;
