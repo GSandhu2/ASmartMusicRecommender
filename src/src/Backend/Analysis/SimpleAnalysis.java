@@ -6,6 +6,8 @@ import Backend.Algorithm.SimpleCharacteristics;
 import Backend.Algorithm.Transform;
 import Backend.Analysis.AnalysisCompare.CompareResult;
 import Backend.Helper.PrintHelper;
+
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -25,11 +27,11 @@ public class SimpleAnalysis implements SoundAnalysis {
   private final String filePath, fileName;
   // Multiplies the power of loudness/dynamics differences on the match result.
   // Lower values = higher match result.
-  private static final double LOUDNESS_WEIGHT = 0.000001, DYNAMICS_WEIGHT = 0.0000001;
+  private static final double LOUDNESS_WEIGHT = 0.00000002, DYNAMICS_WEIGHT = 0.0000002;
   // Higher values = Bigger result difference between big differences and small differences.
-  private static final double LOUDNESS_EXPONENT = 2.0, DYNAMICS_EXPONENT = 2.5;
+  private static final double LOUDNESS_EXPONENT = 2.5, DYNAMICS_EXPONENT = 1.5;
   // Multiplies the power of differences on individual frequency bins.
-  private static final double LOUDNESS_RECURSION = 0.5, DYNAMICS_RECURSION = 0.5;
+  private static final double LOUDNESS_RECURSION = 0.75, DYNAMICS_RECURSION = 0.75;
   // Multiplies arctan bounds from pi/2 to 1.
   private static final double ARCTAN_MULTIPLIER = 2.0 / Math.PI;
 
@@ -42,7 +44,10 @@ public class SimpleAnalysis implements SoundAnalysis {
     try {
       path = Paths.get(filePath);
       this.fileName = path.getFileName().toString();
-      savePath = System.getProperty("user.dir") + "\\SavedAnalysis\\" + fileName + ".simple";
+      if(filePath.contains("\\SavedAnalysis\\") && filePath.contains(".simple"))
+        savePath = filePath;
+      else
+        savePath = System.getProperty("user.dir") + "\\SavedAnalysis\\" + fileName + ".simple";
       path = Paths.get(savePath);
     } catch (InvalidPathException e) {
       throw new IOException("SimpleAnalysis: Invalid filepath - " + e.getMessage());
@@ -69,6 +74,20 @@ public class SimpleAnalysis implements SoundAnalysis {
     }
   }
 
+  // Gets all .simple analyses saved in SavedAnalysis folder.
+  public static List<SimpleAnalysis> getAllSavedAnalyses() throws IOException {
+    File saveFolder = new File(System.getProperty("user.dir") + "\\SavedAnalysis");
+    File[] files = saveFolder.listFiles();
+    if (files == null)
+      throw new IOException("SimpleAnalysis: SavedAnalysis is not directory.");
+
+    List<SimpleAnalysis> result = new ArrayList<>(files.length);
+    for (File file : files)
+      result.add(new SimpleAnalysis(file.getPath(), true, false));
+
+    return result;
+  }
+
   @Override
   public double compareTo(SoundAnalysis other) {
     if (!(other instanceof SimpleAnalysis otherSimple)) {
@@ -77,26 +96,32 @@ public class SimpleAnalysis implements SoundAnalysis {
 
     double[] thisLeftLoudness = this.characteristics.getAverageVolume(Channel.LEFT);
     double[] thisRightLoudness = this.characteristics.getAverageVolume(Channel.RIGHT);
-    double[] thisLeftDynamics = this.characteristics.getDynamicRating(Channel.LEFT);
-    double[] thisRightDynamics = this.characteristics.getDynamicRating(Channel.RIGHT);
+    double[] thisLeftRise = this.characteristics.getAverageRise(Channel.LEFT);
+    double[] thisRightRise = this.characteristics.getAverageRise(Channel.RIGHT);
+    double[] thisLeftFall = this.characteristics.getAverageFall(Channel.LEFT);
+    double[] thisRightFall = this.characteristics.getAverageFall(Channel.RIGHT);
     double[] otherLeftLoudness = otherSimple.characteristics.getAverageVolume(Channel.LEFT);
     double[] otherRightLoudness = otherSimple.characteristics.getAverageVolume(Channel.RIGHT);
-    double[] otherLeftDynamics = otherSimple.characteristics.getDynamicRating(Channel.LEFT);
-    double[] otherRightDynamics = otherSimple.characteristics.getDynamicRating(Channel.RIGHT);
+    double[] otherLeftRise = otherSimple.characteristics.getAverageRise(Channel.LEFT);
+    double[] otherRightRise = otherSimple.characteristics.getAverageRise(Channel.RIGHT);
+    double[] otherLeftFall = otherSimple.characteristics.getAverageFall(Channel.LEFT);
+    double[] otherRightFall = otherSimple.characteristics.getAverageFall(Channel.RIGHT);
+
+    //System.out.println("Comparing " + this.fileName + " to " + otherSimple.fileName);
 
     // if both stereo
     if (thisRightLoudness != null && otherRightLoudness != null)
-      return stereoCompare(thisLeftLoudness, otherLeftLoudness, thisLeftDynamics, otherLeftDynamics,
-          thisRightLoudness, otherRightLoudness, thisRightDynamics, otherRightDynamics);
+      return stereoCompare(thisLeftLoudness, otherLeftLoudness, thisLeftRise, otherLeftRise, thisLeftFall, otherLeftFall,
+          thisRightLoudness, otherRightLoudness, thisRightRise, otherRightRise, thisRightFall, otherRightFall);
     // if one stereo and one mono
     if (thisRightLoudness != null)
       return stereoToMonoCompare(thisLeftLoudness, thisRightLoudness, otherLeftLoudness,
-          thisLeftDynamics, thisRightDynamics, otherLeftDynamics);
+          thisLeftRise, thisRightRise, otherLeftRise, thisLeftFall, thisRightFall, otherLeftFall);
     if (otherRightLoudness != null)
       return stereoToMonoCompare(otherLeftLoudness, otherRightLoudness, thisLeftLoudness,
-          otherLeftDynamics, otherRightDynamics, thisLeftDynamics);
+          otherLeftRise, otherRightRise, thisLeftRise, otherLeftFall, otherRightFall, thisLeftFall);
     // if both mono
-    return monoCompare(thisLeftLoudness, otherLeftLoudness, thisLeftDynamics, otherLeftDynamics);
+    return monoCompare(thisLeftLoudness, otherLeftLoudness, thisLeftRise, otherLeftRise, thisLeftFall, otherLeftFall);
   }
 
   public String getFilePath() {
@@ -110,32 +135,34 @@ public class SimpleAnalysis implements SoundAnalysis {
 
   //region Private methods
   // a/b = SimpleAnalysis Objects
-  // L/D = Loudness/Dynamics
+  // L/R/F = Loudness/Rise/Fall
   // 1/2 = Left/Right Channels
-  private static double monoCompare(double[] aL, double[] bL, double[] aD, double[] bD) {
+  private static double monoCompare(double[] aL, double[] bL, double[] aR, double[] bR, double[] aF, double[] bF) {
     double loudnessDifference = recursiveSumDifferences(aL, bL, 0, aL.length, LOUDNESS_EXPONENT, LOUDNESS_RECURSION) * LOUDNESS_WEIGHT;
-    double dynamicsDifference = recursiveSumDifferences(aD, bD, 0, aD.length, DYNAMICS_EXPONENT, DYNAMICS_RECURSION) * DYNAMICS_WEIGHT;
+    double riseDifference = recursiveSumDifferences(aR, bR, 0, aR.length, DYNAMICS_EXPONENT, DYNAMICS_RECURSION) * DYNAMICS_WEIGHT;
+    double fallDifference = recursiveSumDifferences(aF, bF, 0, aF.length, DYNAMICS_EXPONENT, DYNAMICS_RECURSION) * DYNAMICS_WEIGHT;
 
-    //System.out.println("loudness = " + loudnessDifference);
-    //System.out.println("dynamics = " + dynamicsDifference);
-    //System.out.println();
+    System.out.println("loudness = " + loudnessDifference);
+    System.out.println("rise = " + riseDifference);
+    System.out.println("fall = " + fallDifference);
+    System.out.println();
 
-    double difference = ARCTAN_MULTIPLIER * Math.atan(loudnessDifference + dynamicsDifference);
+    double difference = ARCTAN_MULTIPLIER * Math.atan(loudnessDifference + riseDifference + fallDifference);
 
     return 1.0 - difference;
   }
 
   private static double stereoToMonoCompare(double[] aL1, double [] aL2, double[] bL,
-      double[] aD1, double[] aD2, double[] bD) {
-    double leftCompare = monoCompare(aL1, bL, aD1, bD);
-    double rightCompare = monoCompare(aL2, bL, aD2, bD);
+      double[] aR1, double[] aR2, double[] bR, double[] aF1, double[] aF2, double[] bF) {
+    double leftCompare = monoCompare(aL1, bL, aR1, bR, aF1, bF);
+    double rightCompare = monoCompare(aL2, bL, aR2, bR, aF2, bF);
     return (0.5 * leftCompare) + (0.5 * rightCompare);
   }
 
-  private static double stereoCompare(double[] aL1, double[] bL1, double[] aD1, double[] bD1,
-  double[] aL2, double[] bL2, double[] aD2, double[] bD2) {
-    double leftCompare = monoCompare(aL1, bL1, aD1, bD1);
-    double rightCompare = monoCompare(aL2, bL2, aD2, bD2);
+  private static double stereoCompare(double[] aL1, double[] bL1, double[] aR1, double[] bR1, double[] aF1, double[] bF1,
+      double[] aL2, double[] bL2, double[] aR2, double[] bR2, double[] aF2, double[] bF2) {
+    double leftCompare = monoCompare(aL1, bL1, aR1, bR1, aF1, bF1);
+    double rightCompare = monoCompare(aL2, bL2, aR2, bR2, aF2, bF2);
     return (0.5 * leftCompare) + (0.5 * rightCompare);
   }
 
@@ -162,7 +189,10 @@ public class SimpleAnalysis implements SoundAnalysis {
   //endregion
 
   // Compares each sound file in args to each other and sorts results by match percentage.
+  // Inputting only one song will compare it to all previously scanned songs (including itself).
+  // Inputting no songs will compare all previously scanned songs.
   public static void main(String[] args) {
+    // Load arguments
     List<SoundAnalysis> analyses = new ArrayList<>(args.length);
     for (String file : args) {
       try {
@@ -172,15 +202,35 @@ public class SimpleAnalysis implements SoundAnalysis {
       }
     }
 
-    if (analyses.size() < 2) {
-      System.out.println("SimpleAnalysis: Needs at least two scan-able songs in args[] to run main method.");
-      System.exit(1);
-    }
-
+    // Compare analyses
+    List<CompareResult> results = null;
     long startTime = System.nanoTime();
-    List<CompareResult> results = AnalysisCompare.compareAnalyses(analyses);
+    if (analyses.size() == 0) {  // No arguments: Compare all saved.
+      try {
+        List<SimpleAnalysis> others = getAllSavedAnalyses();
+        if (others.size() < 2)
+          throw new IllegalStateException("SimpleAnalysis: Need at least two saved analyses to compare.");
+        results = AnalysisCompare.compareAnalyses(others);
+        results = AnalysisCompare.mostAndLeastSimilar(results);
+      } catch (IOException | IllegalStateException e) {
+        System.out.println("SimpleAnalysis: Failed to load saved analyses - " + e.getMessage());
+        System.exit(1);
+      }
+    } else if (analyses.size() == 1) {  // One argument: Compare one against all saved.
+      try {
+        List<SimpleAnalysis> others = getAllSavedAnalyses();
+        results = AnalysisCompare.compareAnalyses(analyses, others);
+      } catch (IOException e) {
+        System.out.println("SimpleAnalysis: Failed to load saved analyses - " + e.getMessage());
+        System.exit(1);
+      }
+    } else {  // Multiple arguments: Compare arguments against each other.
+      results = AnalysisCompare.compareAnalyses(analyses);
+      results = AnalysisCompare.mostAndLeastSimilar(results);
+    }
     System.out.println("\nCalculation time: " + ((System.nanoTime() - startTime) / 1000000000.0) + " seconds");
-    results = AnalysisCompare.mostAndLeastSimilar(results);
+
+    // Print results.
     Collections.reverse(results);
     for (CompareResult result : results) {
       SimpleAnalysis a = (SimpleAnalysis)result.a;

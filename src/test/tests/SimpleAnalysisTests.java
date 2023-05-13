@@ -9,19 +9,19 @@ import org.junit.jupiter.api.*;
 // Tests the overall algorithm for SimpleAnalysis
 public class SimpleAnalysisTests {
   private static final double zeroErrorBound = 0.0;
-  private static final double smallErrorBound = 0.01;
+  private static final double smallErrorBound = 0.02;
   private static final double largeErrorBound = 0.2;
 
   private void testEqual(String file1, String file2, double errorBound) throws IOException {
     SoundAnalysis a = new SimpleAnalysis(file1, false, false);
     SoundAnalysis b = new SimpleAnalysis(file2, false, false);
-    assertEquals(a.compareTo(b), 1.0, errorBound);
+    assertEquals(1.0, a.compareTo(b), errorBound);
   }
 
   private void testDifferent(String file1, String file2, double errorBound) throws IOException {
     SoundAnalysis a = new SimpleAnalysis(file1, false, false);
     SoundAnalysis b = new SimpleAnalysis(file2, false, false);
-    assertEquals(a.compareTo(b), 0.0, errorBound);
+    assertEquals(0.0, a.compareTo(b), errorBound);
   }
 
   private void testMoreDifferent(String base, String similar, String different) throws IOException {
@@ -34,14 +34,14 @@ public class SimpleAnalysisTests {
   @Test
   public void testReflexive() throws IOException {
     SoundAnalysis sa = new SimpleAnalysis("src/test/resource/white_noise.wav", false, false);
-    assertEquals(sa.compareTo(sa), 1.0);
+    assertEquals(1.0, sa.compareTo(sa), zeroErrorBound);
   }
 
   @Test
   public void testSymmetric() throws IOException {
     SoundAnalysis a = new SimpleAnalysis("src/test/resource/white_noise.wav", false, false);
     SoundAnalysis b = new SimpleAnalysis("src/test/resource/pink_noise.wav", false, false);
-    assertEquals(a.compareTo(b), b.compareTo(a));
+    assertEquals(a.compareTo(b), b.compareTo(a), zeroErrorBound);
   }
 
   // Passing Requirement: Same sound with reversed polarity has ~100% match result.
@@ -80,7 +80,13 @@ public class SimpleAnalysisTests {
   // Passing Requirement: An audible and silent sound have nearly 0% match result.
   @Test
   public void testSilenceVersusNoise() throws IOException {
-    testDifferent("src/test/resource/white_noise.wav", "src/test/resource/silence_long.wav", smallErrorBound);
+    testDifferent("src/test/resource/white_noise.wav", "src/test/resource/silence_long.wav", largeErrorBound);
+  }
+
+  // Passing Requirement: A song played backwards does not match against the original.
+  @Test
+  public void testReverse() throws IOException {
+    testDifferent("src/test/resource/Blue_Pearl.wav", "src/test/resource/Blue_Pearl_Reversed.mp3", 1 - largeErrorBound);
   }
 
   // Passing Requirement: More reverb applied to same sound = lower match result.

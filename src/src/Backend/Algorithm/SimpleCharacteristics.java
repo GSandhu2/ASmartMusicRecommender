@@ -16,8 +16,12 @@ public class SimpleCharacteristics {
   //region Fields and public methods
   // Average volume of each frequency bin.
   private final double[] averageLeftVolume, averageRightVolume;
-  // Average rate of volume change per second for each frequency bin.
-  private final double[] averageLeftDynamicRating, averageRightDynamicRating;
+  // Average rate of volume change for each frequency bin.
+  private final double[] averageLeftRise, averageRightRise;
+  private final double[] averageLeftFall, averageRightFall;
+  // Needed to weigh rise/fall differently.
+  private static final double VOLUME_CHANGE_EXPONENT = 3.0;
+  private static final double VOLUME_CHANGE_WEIGHT = 0.01;
 
   public SimpleCharacteristics(Transform transform) {
     float[][] left = Normalizer.normalizeTransform(transform.getFrequencyAmplitudes(Channel.LEFT));
@@ -25,32 +29,43 @@ public class SimpleCharacteristics {
 
     System.out.println("SimpleCharacteristics: Calculating characteristics");
 
-    averageLeftVolume = calculateVolume(left);
-    averageLeftDynamicRating = calculateDynamicRating(left);
+    double[][] leftCharacteristics = calculateChannelInfo(left);
+    averageLeftVolume = leftCharacteristics[0];
+    averageLeftRise = leftCharacteristics[1];
+    averageLeftFall = leftCharacteristics[2];
     if (right != null) {
-      averageRightVolume = calculateVolume(right);
-      averageRightDynamicRating = calculateDynamicRating(right);
+      double[][] rightCharacteristics = calculateChannelInfo(right);
+      averageRightVolume = rightCharacteristics[0];
+      averageRightRise = rightCharacteristics[1];
+      averageRightFall = rightCharacteristics[2];
     } else {
       averageRightVolume = null;
-      averageRightDynamicRating = null;
+      averageRightRise = null;
+      averageRightFall = null;
     }
   }
 
   // Used for loading.
   private SimpleCharacteristics(double[] averageLeftVolume, double[] averageRightVolume,
-  double[] averageLeftDynamicRating, double[] averageRightDynamicRating) {
+  double[] averageLeftRise, double[] averageRightRise, double[] averageLeftFall, double[] averageRightFall) {
     this.averageLeftVolume = averageLeftVolume;
     this.averageRightVolume = averageRightVolume;
-    this.averageLeftDynamicRating = averageLeftDynamicRating;
-    this.averageRightDynamicRating = averageRightDynamicRating;
+    this.averageLeftRise = averageLeftRise;
+    this.averageRightRise = averageRightRise;
+    this.averageLeftFall = averageLeftFall;
+    this.averageRightFall = averageRightFall;
   }
 
   public double[] getAverageVolume(Channel channel) {
     return (channel == Channel.LEFT) ? averageLeftVolume : averageRightVolume;
   }
 
-  public double[] getDynamicRating(Channel channel) {
-    return (channel == Channel.LEFT) ? averageLeftDynamicRating : averageRightDynamicRating;
+  public double[] getAverageRise(Channel channel) {
+    return (channel == Channel.LEFT) ? averageLeftRise : averageRightRise;
+  }
+
+  public double[] getAverageFall(Channel channel) {
+    return (channel == Channel.LEFT) ? averageLeftFall : averageRightFall;
   }
 
   public void write(String filepath) throws IOException {
@@ -61,21 +76,16 @@ public class SimpleCharacteristics {
     writer.write(averageRightVolume != null ? "Stereo" : "Mono");
     writer.newLine();
     writeArray(writer, averageLeftVolume);
-    writeArray(writer, averageLeftDynamicRating);
+    writeArray(writer, averageLeftRise);
+    writeArray(writer, averageLeftFall);
     if (averageRightVolume != null) {
       writeArray(writer, averageRightVolume);
-      writeArray(writer, averageRightDynamicRating);
+      writeArray(writer, averageRightRise);
+      writeArray(writer, averageRightFall);
     }
 
     writer.flush();
     writer.close();
-  }
-
-  private static void writeArray(BufferedWriter writer, double[] array) throws IOException {
-    for (double value : array) {
-      writer.write(String.valueOf(value));
-      writer.newLine();
-    }
   }
 
   public static SimpleCharacteristics load(String filepath) throws IOException {
@@ -83,29 +93,33 @@ public class SimpleCharacteristics {
 
     boolean stereo = reader.readLine().equals("Stereo");
 
-    double[] lv = loadArray(reader, Transform.FREQUENCY_RESOLUTION);
-    double[] ld = loadArray(reader, Transform.FREQUENCY_RESOLUTION);
-    double[] rv, rd;
+    double[] lv = loadArray(reader);
+    double[] lr = loadArray(reader);
+    double[] lf = loadArray(reader);
+    double[] rv, rr, rf;
     if (stereo) {
-      rv = loadArray(reader, Transform.FREQUENCY_RESOLUTION);
-      rd = loadArray(reader, Transform.FREQUENCY_RESOLUTION);
+      rv = loadArray(reader);
+      rr = loadArray(reader);
+      rf = loadArray(reader);
     } else {
       rv = null;
-      rd = null;
+      rr = null;
+      rf = null;
     }
 
-    return new SimpleCharacteristics(lv, rv, ld, rd);
-  }
-
-  private static double[] loadArray(BufferedReader reader, int length) throws IOException {
-    double[] result = new double[length];
-    for (int i = 0; i < length; i++)
-      result[i] = Double.parseDouble(reader.readLine());
-    return result;
+    return new SimpleCharacteristics(lv, rv, lr, rr, lf, rf);
   }
   //endregion
 
   //region Private methods
+  private static double[][] calculateChannelInfo(float[][] channel) {
+    double[][] result = new double[3][];
+    result[0] = calculateVolume(channel);
+    result[1] = calculateVolumeChange(channel, true);
+    result[2] = calculateVolumeChange(channel, false);
+    return result;
+  }
+
   private static double[] calculateVolume(float[][] channel) {
     double[] result = new double[channel[0].length];
 
@@ -124,7 +138,7 @@ public class SimpleCharacteristics {
     return result;
   }
 
-  private static double[] calculateDynamicRating(float[][] channel) {
+  private static double[] calculateVolumeChange(float[][] channel, boolean rise) {
     double[] result = new double[channel[0].length];
 
     // for each frequency
@@ -133,12 +147,29 @@ public class SimpleCharacteristics {
 
       // for each time
       for (int i = 1; i < channel.length; i++) {
-        result[j] += Math.abs(channel[i][j] - channel[i - 1][j]);
+        if (rise && channel[i][j] > channel[i-1][j])
+          result[j] += Math.pow(channel[i][j] - channel[i-1][j], VOLUME_CHANGE_EXPONENT);
+        if (!rise && channel[i][j] < channel[i-1][j])
+          result[j] += Math.pow(channel[i-1][j] - channel[i][j], VOLUME_CHANGE_EXPONENT);
       }
 
-      result[j] /= channel.length;
+      result[j] *= VOLUME_CHANGE_WEIGHT / (channel.length * Transform.frequencyAtBin(j));
     }
 
+    return result;
+  }
+
+  private static void writeArray(BufferedWriter writer, double[] array) throws IOException {
+    for (double value : array) {
+      writer.write(String.valueOf(value));
+      writer.newLine();
+    }
+  }
+
+  private static double[] loadArray(BufferedReader reader) throws IOException {
+    double[] result = new double[Transform.FREQUENCY_RESOLUTION];
+    for (int i = 0; i < Transform.FREQUENCY_RESOLUTION; i++)
+      result[i] = Double.parseDouble(reader.readLine());
     return result;
   }
   //endregion
@@ -154,11 +185,13 @@ public class SimpleCharacteristics {
 
       System.out.println("Left channel characteristics:");
       double[] leftVolume = simpleCharacteristics.getAverageVolume(Channel.LEFT);
-      double[] leftDR = simpleCharacteristics.getDynamicRating(Channel.LEFT);
+      double[] leftRise = simpleCharacteristics.getAverageRise(Channel.LEFT);
+      double[] leftFall = simpleCharacteristics.getAverageFall(Channel.LEFT);
 
       PrintHelper.printFrequencies();
       PrintHelper.printValues("Loudness", leftVolume);
-      PrintHelper.printValues("Dynamics", leftDR);
+      PrintHelper.printValues("Rise", leftRise);
+      PrintHelper.printValues("Fall", leftFall);
 
     } catch (IOException e) {
       System.out.println(e.getMessage());
