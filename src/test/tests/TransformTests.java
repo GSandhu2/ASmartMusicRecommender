@@ -15,10 +15,10 @@ public class TransformTests {
   // Passing requirements:
   // - frequencyAmplitudes.length / TIME_RESOLUTION ~ Duration
   // - The loudest frequency bin is the one closest to 1,000 Hz
-  // - The loudest frequency bin is around -6dB (or 0.25 * Short.MAX_VALUE).
+  // - The loudest frequency bin is around -6dB (or 0.5 * Short.MAX_VALUE).
   @Test
   public void testToneTransform() throws IOException {
-    Reader reader = Reader.readFile("src/test/resource/tone_1000hz_-6db.mp3");
+    Reader reader = Reader.readFile("src/test/resource/tone_1000hz.wav");
     Transform transform = new Transform(reader);
     float[][] frequencyAmplitudes = transform.getFrequencyAmplitudes(Channel.LEFT);
 
@@ -56,7 +56,7 @@ public class TransformTests {
         "Loudest frequency is too far over 1000Hz");
 
     // test loudest frequency bin by amplitude
-    assertEquals(1.0, (maxValue / (0.25 * Short.MAX_VALUE)), errorBound);
+    assertEquals(1.0, (maxValue / (0.5 * Short.MAX_VALUE)), errorBound);
   }
 
   // Basic test for helper method.
@@ -82,7 +82,7 @@ public class TransformTests {
   // - Flat frequency balance.
   @Test
   public void testNoiseTransform() throws IOException {
-    Reader reader = Reader.readFile("src/test/resource/pink_noise_-6db.mp3");
+    Reader reader = Reader.readFile("src/test/resource/pink_noise.wav");
     Transform transform = new Transform(reader);
     float[][] frequencyAmplitudes = transform.getFrequencyAmplitudes(Channel.LEFT);
 
