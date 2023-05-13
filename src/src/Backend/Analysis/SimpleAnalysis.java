@@ -12,6 +12,7 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -24,11 +25,11 @@ public class SimpleAnalysis implements SoundAnalysis {
   private final String filePath, fileName;
   // Multiplies the power of loudness/dynamics differences on the match result.
   // Lower values = higher match result.
-  private static final double LOUDNESS_WEIGHT = 0.0000001, DYNAMICS_WEIGHT = 0.00000002;
-  // Higher values = Bigger difference between big differences and small differences.
-  private static final double LOUDNESS_EXPONENT = 2.0, DYNAMICS_EXPONENT = 2.0;
+  private static final double LOUDNESS_WEIGHT = 0.000001, DYNAMICS_WEIGHT = 0.0000001;
+  // Higher values = Bigger result difference between big differences and small differences.
+  private static final double LOUDNESS_EXPONENT = 2.0, DYNAMICS_EXPONENT = 2.5;
   // Multiplies the power of differences on individual frequency bins.
-  private static final double RECURSIVE_WEIGHT = 0.1;
+  private static final double LOUDNESS_RECURSION = 0.5, DYNAMICS_RECURSION = 0.5;
   // Multiplies arctan bounds from pi/2 to 1.
   private static final double ARCTAN_MULTIPLIER = 2.0 / Math.PI;
 
@@ -63,7 +64,6 @@ public class SimpleAnalysis implements SoundAnalysis {
     this.characteristics = new SimpleCharacteristics(transform);
     if (save) {
       System.out.println("SimpleAnalysis: Saving analysis to " + savePath);
-      System.out.println("New directory: " + path.getParent().toString());
       Files.createDirectories(path.getParent());
       this.characteristics.write(savePath);
     }
@@ -113,8 +113,12 @@ public class SimpleAnalysis implements SoundAnalysis {
   // L/D = Loudness/Dynamics
   // 1/2 = Left/Right Channels
   private static double monoCompare(double[] aL, double[] bL, double[] aD, double[] bD) {
-    double loudnessDifference = recursiveSumDifferences(aL, bL, 0, aL.length, LOUDNESS_EXPONENT) * LOUDNESS_WEIGHT;
-    double dynamicsDifference = recursiveSumDifferences(aD, bD, 0, aD.length, DYNAMICS_EXPONENT) * DYNAMICS_WEIGHT;
+    double loudnessDifference = recursiveSumDifferences(aL, bL, 0, aL.length, LOUDNESS_EXPONENT, LOUDNESS_RECURSION) * LOUDNESS_WEIGHT;
+    double dynamicsDifference = recursiveSumDifferences(aD, bD, 0, aD.length, DYNAMICS_EXPONENT, DYNAMICS_RECURSION) * DYNAMICS_WEIGHT;
+
+    //System.out.println("loudness = " + loudnessDifference);
+    //System.out.println("dynamics = " + dynamicsDifference);
+    //System.out.println();
 
     double difference = ARCTAN_MULTIPLIER * Math.atan(loudnessDifference + dynamicsDifference);
 
@@ -136,16 +140,15 @@ public class SimpleAnalysis implements SoundAnalysis {
   }
 
   // Sums a/b together and calculates the sum difference, then splits a/b to do it again.
-  private static double recursiveSumDifferences(double[] a, double[] b, int start, int length, double exp) {
+  private static double recursiveSumDifferences(double[] a, double[] b, int start, int length, double exp, double rec) {
     if (length == 0 || start >= a.length)
       return 0.0;
     if (length == 1)
       return Math.pow(Math.abs(a[start] - b[start]), exp);
     double result = Math.pow(Math.abs(sumArray(a, start, length) - sumArray(b, start, length)), exp);
     int nextLength = (int)Math.ceil((double)length / 2.0);
-    int end = start + length;
-    for (int i = start; i < end; i += nextLength)
-      result += recursiveSumDifferences(a, b, i, nextLength, exp) * RECURSIVE_WEIGHT;
+    for (int i = start; i < nextLength; i += 1)
+      result += recursiveSumDifferences(a, b, i, nextLength, exp, rec) * rec / nextLength;
     return result;
   }
 
@@ -165,8 +168,7 @@ public class SimpleAnalysis implements SoundAnalysis {
       try {
         analyses.add(new SimpleAnalysis(file, true, true));
       } catch (Exception e) {
-        e.printStackTrace();
-        System.out.println("SimpleAnalysis: Failed to scan file - " + e.getMessage() + "\n");
+        System.out.println("SimpleAnalysis: Failed to scan file - " + e.getMessage());
       }
     }
 
@@ -175,7 +177,10 @@ public class SimpleAnalysis implements SoundAnalysis {
       System.exit(1);
     }
 
+    long startTime = System.nanoTime();
     List<CompareResult> results = AnalysisCompare.compareAnalyses(analyses);
+    System.out.println("\nCalculation time: " + ((System.nanoTime() - startTime) / 1000000000.0) + " seconds");
+    Collections.reverse(results);
     for (CompareResult result : results) {
       SimpleAnalysis a = (SimpleAnalysis)result.a;
       SimpleAnalysis b = (SimpleAnalysis)result.b;
