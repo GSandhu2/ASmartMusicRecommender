@@ -146,7 +146,7 @@ public class SimpleCharacteristics {
   // Prints the average volume/DR information of the audio file in args[0].
   public static void main(String[] args) {
     try {
-      Reader reader = new Reader(args[0]);
+      Reader reader = Reader.readFile(args[0]);
       Transform transform = new Transform(reader);
       long startTime = System.nanoTime();
       SimpleCharacteristics simpleCharacteristics = new SimpleCharacteristics(transform);

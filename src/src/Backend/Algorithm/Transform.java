@@ -230,7 +230,7 @@ public class Transform {
   // Prints the frequency/amplitude information of the audio file in args[0]
   public static void main(String[] args) {
     try {
-      Reader reader = new Reader(args[0]);
+      Reader reader = Reader.readFile(args[0]);
       long startTime = System.nanoTime();
       Transform transform = new Transform(reader);
       System.out.println("Calculation time: " + ((System.nanoTime() - startTime) / 1000000000.0) + " seconds");

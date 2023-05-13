@@ -59,7 +59,7 @@ public class SimpleAnalysis implements SoundAnalysis {
     }
 
     System.out.println("SimpleAnalysis: Analysing new song " + fileName);
-    Reader reader = new Reader(filePath);
+    Reader reader = Reader.readFile(filePath);
     Transform transform = new Transform(reader);
     this.characteristics = new SimpleCharacteristics(transform);
     if (save) {
