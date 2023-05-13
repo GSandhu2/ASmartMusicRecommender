@@ -24,7 +24,7 @@ public class AnalysisCompare {
     }
   }
 
-  public static List<CompareResult> compareAnalyses(List<SoundAnalysis> analyses) {
+  public static List<CompareResult> compareAnalyses(List<? extends SoundAnalysis> analyses) {
     List<CompareResult> result = new ArrayList<>(analyses.size() * analyses.size() / 2);
 
     // gather results
@@ -39,7 +39,7 @@ public class AnalysisCompare {
     return result;
   }
 
-  public static List<CompareResult> compareAnalyses(List<SoundAnalysis> userAnalyses, List<SoundAnalysis> compareTo) {
+  public static List<CompareResult> compareAnalyses(List<? extends SoundAnalysis> userAnalyses, List<? extends SoundAnalysis> compareTo) {
     List<CompareResult> result = new ArrayList<>(userAnalyses.size() * compareTo.size());
 
     // gather results
