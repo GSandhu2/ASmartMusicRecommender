@@ -7,6 +7,7 @@ import Backend.Algorithm.Transform;
 import Backend.Analysis.AnalysisCompare.CompareResult;
 import Backend.Helper.PrintHelper;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,14 +36,17 @@ public class SimpleAnalysis implements SoundAnalysis {
   public SimpleAnalysis(String filePath, boolean load, boolean save) throws IOException {
     this.filePath = filePath;
 
+    Path path;
+    String savePath;
     try {
-      Path path = Paths.get(filePath);
+      path = Paths.get(filePath);
       this.fileName = path.getFileName().toString();
+      savePath = System.getProperty("user.dir") + "\\SavedAnalysis\\" + fileName + ".simple";
+      path = Paths.get(savePath);
     } catch (InvalidPathException e) {
       throw new IOException("SimpleAnalysis: Invalid filepath - " + e.getMessage());
     }
 
-    String savePath = System.getProperty("user.dir") + "/SavedAnalysis/" + fileName + ".simple";
     if (load) {
       System.out.println("SimpleAnalysis: Loading analysis for " + fileName);
       try {
@@ -59,6 +63,8 @@ public class SimpleAnalysis implements SoundAnalysis {
     this.characteristics = new SimpleCharacteristics(transform);
     if (save) {
       System.out.println("SimpleAnalysis: Saving analysis to " + savePath);
+      System.out.println("New directory: " + path.getParent().toString());
+      Files.createDirectories(path.getParent());
       this.characteristics.write(savePath);
     }
   }
