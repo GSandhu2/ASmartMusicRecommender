@@ -15,7 +15,7 @@ public class Normalizer {
   private static final double dbOfMax = 90;
   // The normalizer will try to set a fourier transform to this perceived volume +- errorBound.
   private static final double targetVolume = 256; // 80 phons
-  private static final double errorBound = 0.1, ratioMultiplier = 1;//, spreadDamp = 1;
+  private static final double errorBound = 0.001, ratioMultiplier = 2;//, spreadDamp = 1;
 
   public static float[][] normalizeTransform(float[][] transform) {
     // Check null
