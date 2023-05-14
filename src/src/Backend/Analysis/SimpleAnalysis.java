@@ -142,10 +142,10 @@ public class SimpleAnalysis implements SoundAnalysis {
     double riseDifference = recursiveSumDifferences(aR, bR, 0, aR.length, DYNAMICS_EXPONENT, DYNAMICS_RECURSION) * DYNAMICS_WEIGHT;
     double fallDifference = recursiveSumDifferences(aF, bF, 0, aF.length, DYNAMICS_EXPONENT, DYNAMICS_RECURSION) * DYNAMICS_WEIGHT;
 
-    System.out.println("loudness = " + loudnessDifference);
-    System.out.println("rise = " + riseDifference);
-    System.out.println("fall = " + fallDifference);
-    System.out.println();
+    //System.out.println("loudness = " + loudnessDifference);
+    //System.out.println("rise = " + riseDifference);
+    //System.out.println("fall = " + fallDifference);
+    //System.out.println();
 
     double difference = ARCTAN_MULTIPLIER * Math.atan(loudnessDifference + riseDifference + fallDifference);
 
