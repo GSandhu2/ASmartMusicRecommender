@@ -1,5 +1,6 @@
 package Backend.Algorithm;
 
+import Backend.Algorithm.Reader.Channel;
 import Backend.Helper.PrintHelper;
 import java.util.Arrays;
 
@@ -10,27 +11,43 @@ import java.util.Arrays;
  * Perceived loudness is arbitrarily set so 0 phons = 100 loudness.
  */
 public class Normalizer {
-  //region Constants and public method
+  //region Fields and public method
+  private final float[][] normalizedLeft, normalizedRight;
   // A full amplitude sine wave will be treated as this volume.
   private static final double dbOfMax = 90;
   // The normalizer will try to set a fourier transform to this perceived volume +- errorBound.
   private static final double targetVolume = 256; // 80 phons
   private static final double errorBound = 0.001, ratioMultiplier = 2;//, spreadDamp = 1;
 
-  public static float[][] normalizeTransform(float[][] transform) {
+  public Normalizer(Transform transform) {
+    float[][] left = transform.getFrequencyAmplitudes(Channel.LEFT);
+    float[][] right = transform.getFrequencyAmplitudes(Channel.RIGHT);
+
+    System.out.println("Normalizer: Running normalization on transform of " + left.length + " samples");
+
+    normalizedLeft = normalizeTransform(left);
+    if (right != null)
+      normalizedRight = normalizeTransform(right);
+    else
+      normalizedRight = null;
+  }
+
+  public float[][] getNormalized(Channel channel) {
+    return (channel == Channel.LEFT ? normalizedLeft : normalizedRight);
+  }
+
+  public static float[][] normalizeTransform(float[][] channel) {
     // Check null
-    if (transform == null)
+    if (channel == null)
       return null;
 
-    System.out.println("Normalizer: Running normalization on transform of " + transform.length + " samples");
-
     // Copy array
-    float[][] result = new float[transform.length][transform[0].length];
-    for (int i = 0; i < transform.length; i++)
-      System.arraycopy(transform[i], 0, result[i], 0, transform[0].length);
+    float[][] result = new float[channel.length][channel[0].length];
+    for (int i = 0; i < channel.length; i++)
+      System.arraycopy(channel[i], 0, result[i], 0, channel[0].length);
 
     // Do nothing for silence
-    double currentVolume = getOverallVolume(transform);
+    double currentVolume = getOverallVolume(channel);
     if (currentVolume == 0)
       return result;
 

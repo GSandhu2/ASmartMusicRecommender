@@ -23,9 +23,9 @@ public class SimpleCharacteristics {
   private static final double VOLUME_CHANGE_EXPONENT = 3.0;
   private static final double VOLUME_CHANGE_WEIGHT = 0.01;
 
-  public SimpleCharacteristics(Transform transform) {
-    float[][] left = Normalizer.normalizeTransform(transform.getFrequencyAmplitudes(Channel.LEFT));
-    float[][] right = Normalizer.normalizeTransform(transform.getFrequencyAmplitudes(Channel.RIGHT));
+  public SimpleCharacteristics(Normalizer normalizer) {
+    float[][] left = normalizer.getNormalized(Channel.LEFT);
+    float[][] right = normalizer.getNormalized(Channel.RIGHT);
 
     System.out.println("SimpleCharacteristics: Calculating characteristics");
 
@@ -179,8 +179,9 @@ public class SimpleCharacteristics {
     try {
       Reader reader = Reader.readFile(args[0]);
       Transform transform = new Transform(reader);
+      Normalizer normalizer = new Normalizer(transform);
       long startTime = System.nanoTime();
-      SimpleCharacteristics simpleCharacteristics = new SimpleCharacteristics(transform);
+      SimpleCharacteristics simpleCharacteristics = new SimpleCharacteristics(normalizer);
       System.out.println("Calculation time: " + ((System.nanoTime() - startTime) / 1000000000.0) + " seconds");
 
       System.out.println("Left channel characteristics:");

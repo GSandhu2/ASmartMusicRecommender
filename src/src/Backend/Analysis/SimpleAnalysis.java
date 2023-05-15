@@ -1,5 +1,6 @@
 package Backend.Analysis;
 
+import Backend.Algorithm.Normalizer;
 import Backend.Algorithm.Reader;
 import Backend.Algorithm.Reader.Channel;
 import Backend.Algorithm.SimpleCharacteristics;
@@ -66,7 +67,8 @@ public class SimpleAnalysis implements SoundAnalysis {
     System.out.println("SimpleAnalysis: Analysing new song " + fileName);
     Reader reader = Reader.readFile(filePath);
     Transform transform = new Transform(reader);
-    this.characteristics = new SimpleCharacteristics(transform);
+    Normalizer normalizer = new Normalizer(transform);
+    this.characteristics = new SimpleCharacteristics(normalizer);
     if (save) {
       System.out.println("SimpleAnalysis: Saving analysis to " + savePath);
       Files.createDirectories(path.getParent());
