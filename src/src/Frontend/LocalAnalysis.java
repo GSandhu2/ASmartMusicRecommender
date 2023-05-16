@@ -6,7 +6,6 @@ package Frontend;
 
 import Backend.Analysis.SimpleAnalysis;
 import java.io.File;
-import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -140,7 +139,7 @@ public class LocalAnalysis extends javax.swing.JFrame {
                 LocalAnalysisResult result = new LocalAnalysisResult(file.getName(), characteristics.getCharacteristics());
                 result.setVisible(true);
                 result.toFront();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 System.out.println("LocalAnalysis: Failed to scan " + filepath + ": " + e.getMessage());
                 ErrorStatus.setVisible(true);
             }
