@@ -4,8 +4,12 @@
  */
 package Frontend;
 
+import Backend.Analysis.AnalysisCompare;
+import Backend.Analysis.AnalysisCompare.CompareResult;
 import Backend.Analysis.SimpleAnalysis;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -15,6 +19,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  * @author Ethan
  */
 public class LocalAnalysis extends javax.swing.JFrame {
+
+    private static File lastDirectory = new File(System.getProperty("user.dir"));
 
     /**
      * Creates new form LocalAnalysis
@@ -34,7 +40,7 @@ public class LocalAnalysis extends javax.swing.JFrame {
 
         AnalyzeInfo = new javax.swing.JLabel();
         ImportInfo = new javax.swing.JLabel();
-        ImportButton = new javax.swing.JButton();
+        CompareButton = new javax.swing.JButton();
         AnalyzeButton = new javax.swing.JButton();
         ProgressBar = new javax.swing.JProgressBar();
         BetaProTip = new javax.swing.JLabel();
@@ -43,15 +49,15 @@ public class LocalAnalysis extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         AnalyzeInfo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        AnalyzeInfo.setText("Click the analyze button to analyze a single audio file and graph the perceived frequency response.");
+        AnalyzeInfo.setText("Click the analyze button to analyze a single audio file and graph the some of its characteristics.");
 
         ImportInfo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         ImportInfo.setText("Click the import button to compare multiple .mp3 and .wav files on your computer.");
 
-        ImportButton.setText("Import");
-        ImportButton.addActionListener(new java.awt.event.ActionListener() {
+        CompareButton.setText("Compare");
+        CompareButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ImportButtonActionPerformed(evt);
+                CompareButtonActionPerformed(evt);
             }
         });
 
@@ -64,6 +70,7 @@ public class LocalAnalysis extends javax.swing.JFrame {
 
         BetaProTip.setText("(Beta Pro Tip: Some .mp3 files will not scan, but converting them to .wav will fix it.)");
 
+        ErrorStatus.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         ErrorStatus.setText("Failed to scan music.");
         ErrorStatus.setToolTipText("");
         ErrorStatus.setVisible(false);
@@ -75,7 +82,7 @@ public class LocalAnalysis extends javax.swing.JFrame {
             .addComponent(ProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addGap(133, 133, 133)
-                .addComponent(ImportButton)
+                .addComponent(CompareButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(AnalyzeButton)
                 .addGap(130, 130, 130))
@@ -86,14 +93,11 @@ public class LocalAnalysis extends javax.swing.JFrame {
                     .addComponent(ImportInfo))
                 .addGap(71, 71, 71))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(31, 31, 31)
-                        .addComponent(AnalyzeInfo))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(238, 238, 238)
-                        .addComponent(ErrorStatus)))
-                .addContainerGap(35, Short.MAX_VALUE))
+                .addGap(31, 31, 31)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(AnalyzeInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(ErrorStatus, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(56, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -106,7 +110,7 @@ public class LocalAnalysis extends javax.swing.JFrame {
                 .addComponent(AnalyzeInfo)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 123, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(ImportButton)
+                    .addComponent(CompareButton)
                     .addComponent(AnalyzeButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(ErrorStatus)
@@ -121,34 +125,86 @@ public class LocalAnalysis extends javax.swing.JFrame {
         System.out.println("LocalAnalysis: Analyze Button Clicked");
 
         JFileChooser fc = new JFileChooser();
-        fc.setCurrentDirectory(new File(System.getProperty("user.dir")));
+        fc.setCurrentDirectory(lastDirectory);
+        fc.setMultiSelectionEnabled(false);
 
         FileFilter ff = new FileNameExtensionFilter("MP3 and WAV", "mp3", "wav");
         fc.addChoosableFileFilter(ff);
         fc.setFileFilter(ff);
 
-        int response = fc.showSaveDialog(this);
+        int response = fc.showOpenDialog(this);
         if (response == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
             String filepath = file.getPath();
-
             System.out.println("LocalAnalysis: File selected - " + filepath);
-            try {
-                SimpleAnalysis characteristics = new SimpleAnalysis(filepath, true, true);
 
-                LocalAnalysisResult result = new LocalAnalysisResult(file.getName(), characteristics.getCharacteristics());
+            try {
+                SimpleAnalysis analysis = new SimpleAnalysis(filepath, true, true);
+
+                LocalAnalysisResult result = new LocalAnalysisResult(file.getName(), analysis.getCharacteristics());
                 result.setVisible(true);
                 result.toFront();
             } catch (Exception e) {
                 System.out.println("LocalAnalysis: Failed to scan " + filepath + ": " + e.getMessage());
+                ErrorStatus.setText("Failed to scan " + filepath + ": " + e.getMessage());
                 ErrorStatus.setVisible(true);
             }
         }
+
+        lastDirectory = fc.getCurrentDirectory();
     }//GEN-LAST:event_AnalyzeButtonActionPerformed
 
-    private void ImportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ImportButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_ImportButtonActionPerformed
+    private void CompareButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CompareButtonActionPerformed
+        System.out.println("LocalAnalysis: Compare Button Clicked");
+
+        JFileChooser fc = new JFileChooser();
+        fc.setCurrentDirectory(lastDirectory);
+        fc.setMultiSelectionEnabled(true);
+
+        FileFilter ff = new FileNameExtensionFilter("MP3 and WAV", "mp3", "wav");
+        fc.addChoosableFileFilter(ff);
+        fc.setFileFilter(ff);
+
+        int response = fc.showOpenDialog(this);
+        if (response == JFileChooser.APPROVE_OPTION) {
+            File[] files = fc.getSelectedFiles();
+            String[] filepaths = new String[files.length];
+            for (int i = 0; i < files.length; i++)
+                filepaths[i] = files[i].getPath();
+            System.out.println("LocalAnalysis: Files selected");
+            SimpleAnalysis.main(filepaths);
+
+            List<SimpleAnalysis> analyses = new ArrayList<>();
+            ProgressBar.setMinimum(0);
+            ProgressBar.setMaximum(files.length);
+
+            for (int i = 0; i < files.length; i++) {
+                ProgressBar.setValue(i);
+                try {
+                    ErrorStatus.setText("Scanning file " + files[i].getName());
+                    ErrorStatus.setVisible(true);
+                    analyses.add(new SimpleAnalysis(filepaths[i], true, true));
+                } catch (Exception e) {
+                    System.out.println("LocalAnalysis: Failed to scan " + filepaths[i] + " - " + e.getMessage());
+                }
+            }
+            ProgressBar.setValue(ProgressBar.getMaximum());
+
+            if (analyses.size() >= 2) {
+                List<CompareResult> results = AnalysisCompare.compareAnalyses(analyses);
+                //results = AnalysisCompare.mostAndLeastSimilar(results);
+
+                LocalCompareResults compareResults = new LocalCompareResults(results);
+                compareResults.setVisible(true);
+                compareResults.toFront();
+                ErrorStatus.setVisible(false);
+            } else {
+                ErrorStatus.setText("Need at least two songs to compare.");
+            }
+        }
+
+        lastDirectory = fc.getCurrentDirectory();
+    }//GEN-LAST:event_CompareButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -189,8 +245,8 @@ public class LocalAnalysis extends javax.swing.JFrame {
     private javax.swing.JButton AnalyzeButton;
     private javax.swing.JLabel AnalyzeInfo;
     private javax.swing.JLabel BetaProTip;
+    private javax.swing.JButton CompareButton;
     private javax.swing.JLabel ErrorStatus;
-    private javax.swing.JButton ImportButton;
     private javax.swing.JLabel ImportInfo;
     private javax.swing.JProgressBar ProgressBar;
     // End of variables declaration//GEN-END:variables
