@@ -191,10 +191,11 @@ public class MainSearch extends javax.swing.JFrame {
             }
             DefaultListModel lm = new DefaultListModel();
             for (int i = 0; i < resultURLs.length; i++) {
-                lm.add(i, resultURLs[i]);
+                String matchPercent = percentFormat.format(results.get(i).result);
+                String combined = resultURLs[i] +  ", " + matchPercent;
+                lm.add(i, combined);
             }
             songList.setModel(lm);
-            
             this.revalidate();
             this.repaint();
             
