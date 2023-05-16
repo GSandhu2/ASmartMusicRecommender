@@ -126,6 +126,10 @@ public class SimpleAnalysis implements SoundAnalysis {
     return monoCompare(thisLeftLoudness, otherLeftLoudness, thisLeftRise, otherLeftRise, thisLeftFall, otherLeftFall);
   }
 
+  public SimpleCharacteristics getCharacteristics() {
+    return characteristics;
+  }
+
   public String getFilePath() {
     return filePath;
   }
