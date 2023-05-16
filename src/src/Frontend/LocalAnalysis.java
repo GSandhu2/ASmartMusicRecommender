@@ -8,6 +8,7 @@ import Backend.Analysis.SimpleAnalysis;
 import java.io.File;
 import java.io.IOException;
 import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
@@ -118,18 +119,27 @@ public class LocalAnalysis extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void AnalyzeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AnalyzeButtonActionPerformed
+        System.out.println("LocalAnalysis: Analyze Button Clicked");
+
         JFileChooser fc = new JFileChooser();
-        fc.addChoosableFileFilter(new FileNameExtensionFilter("MP3 and WAV", "mp3", "wav"));
         fc.setCurrentDirectory(new File(System.getProperty("user.dir")));
+
+        FileFilter ff = new FileNameExtensionFilter("MP3 and WAV", "mp3", "wav");
+        fc.addChoosableFileFilter(ff);
+        fc.setFileFilter(ff);
+
         int response = fc.showSaveDialog(this);
         if (response == JFileChooser.APPROVE_OPTION) {
             File file = fc.getSelectedFile();
             String filepath = file.getPath();
+
+            System.out.println("LocalAnalysis: File selected - " + filepath);
             try {
                 SimpleAnalysis characteristics = new SimpleAnalysis(filepath, true, true);
-                this.toBack();
-                this.dispose();
 
+                LocalAnalysisResult result = new LocalAnalysisResult(file.getName(), characteristics.getCharacteristics());
+                result.setVisible(true);
+                result.toFront();
             } catch (IOException e) {
                 System.out.println("LocalAnalysis: Failed to scan " + filepath + ": " + e.getMessage());
                 ErrorStatus.setVisible(true);
