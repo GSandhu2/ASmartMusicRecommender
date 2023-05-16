@@ -120,7 +120,11 @@ public class Login extends javax.swing.JFrame {
      * If username is invalid, let the user know and they can try and input again
      * @param evt
      */
-    private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
+private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
+    String username = userInput.getText().trim();
+    if (username.isEmpty()) {
+        showError("Username cannot be empty.");
+    } else {
         try {
             SpotifyAPI.setUserId(username);
             errorLabel.setVisible(false);
@@ -131,9 +135,11 @@ public class Login extends javax.swing.JFrame {
             newSearch.toFront();
         } catch (RuntimeException e) {
             System.out.println("Login: Invalid username - " + e.getMessage());
-            errorLabel.setVisible(true);
+            showError("Invalid username.");
         }
-    }//GEN-LAST:event_submitButtonActionPerformed
+    }
+}
+}//GEN-LAST:event_submitButtonActionPerformed
 
     /**
      * Simply moves back to a new Home frame, and disposes of the current Login frame
