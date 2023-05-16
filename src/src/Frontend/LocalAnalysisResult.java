@@ -3,17 +3,23 @@ package Frontend;
 import Backend.Algorithm.Reader.Channel;
 import Backend.Algorithm.SimpleCharacteristics;
 import Backend.Algorithm.Transform;
+import java.awt.Font;
 import javax.swing.JFrame;
 
 import javax.swing.WindowConstants;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.CategoryMarker;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.ui.RectangleAnchor;
+import org.jfree.ui.TextAnchor;
 
 // See https://www.javatpoint.com/jfreechart-line-chart
 public class LocalAnalysisResult extends JFrame {
+
+  private static final Font labelFont = new Font(Font.SANS_SERIF, Font.ITALIC, 10);
 
   public LocalAnalysisResult(String filename, SimpleCharacteristics characteristics) {
     super("Analysis of " + filename);
@@ -21,14 +27,26 @@ public class LocalAnalysisResult extends JFrame {
     DefaultCategoryDataset dataset = createDataset(characteristics);
 
     JFreeChart chart = ChartFactory.createLineChart("Simple Analysis of " + filename,
-        "Frequency Bins", "Perceived Loudness", dataset,
-        PlotOrientation.VERTICAL, true, true, false);
+        "Frequency Bins (20hz - 20khz)", "Perceived Loudness",
+        dataset, PlotOrientation.VERTICAL, true, true, false);
+
+    for (int i = 0; i < 20; i++) {
+      String label = String.valueOf((int)(Transform.frequencyAtBin(
+          i * Transform.FREQUENCY_RESOLUTION / 20)));
+      CategoryMarker marker = new CategoryMarker(label);
+      marker.setLabel(label + "hz");
+      marker.setLabelFont(labelFont);
+      marker.setDrawAsLine(true);
+      marker.setLabelAnchor(RectangleAnchor.BOTTOM);
+      marker.setLabelTextAnchor(TextAnchor.BASELINE_CENTER);
+      chart.getCategoryPlot().addDomainMarker(marker);
+    }
 
     ChartPanel panel = new ChartPanel(chart);
     setContentPane(panel);
 
     pack();
-    setSize(1000, 500);
+    setSize(1200, 600);
     setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
   }
 
