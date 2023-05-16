@@ -39,6 +39,7 @@ public class LocalAnalysis extends javax.swing.JFrame {
         ProgressBar = new javax.swing.JProgressBar();
         BetaProTip = new javax.swing.JLabel();
         ErrorStatus = new javax.swing.JLabel();
+        backButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -68,6 +69,14 @@ public class LocalAnalysis extends javax.swing.JFrame {
         ErrorStatus.setToolTipText("");
         ErrorStatus.setVisible(false);
 
+        backButton.setText("Back");
+        backButton.setToolTipText("");
+        backButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                backButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -94,11 +103,15 @@ public class LocalAnalysis extends javax.swing.JFrame {
                         .addGap(238, 238, 238)
                         .addComponent(ErrorStatus)))
                 .addContainerGap(35, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(backButton)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(34, 34, 34)
+                .addComponent(backButton)
+                .addGap(11, 11, 11)
                 .addComponent(ImportInfo)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(BetaProTip)
@@ -151,6 +164,19 @@ public class LocalAnalysis extends javax.swing.JFrame {
     }//GEN-LAST:event_ImportButtonActionPerformed
 
     /**
+     * Returns back to a new Home frame, and disposes of the current LocalAnalysis frame
+     * @param evt 
+     */
+    private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
+        // TODO add your handling code here:
+        this.toBack();
+        Home newHome = new Home();
+        newHome.setVisible(true);
+        this.dispose();
+        newHome.toFront();
+    }//GEN-LAST:event_backButtonActionPerformed
+
+    /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
@@ -193,5 +219,6 @@ public class LocalAnalysis extends javax.swing.JFrame {
     private javax.swing.JButton ImportButton;
     private javax.swing.JLabel ImportInfo;
     private javax.swing.JProgressBar ProgressBar;
+    private javax.swing.JButton backButton;
     // End of variables declaration//GEN-END:variables
 }

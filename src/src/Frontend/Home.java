@@ -27,7 +27,8 @@ public class Home extends javax.swing.JFrame {
 
         titleLabel = new javax.swing.JLabel();
         subtitleLabel = new javax.swing.JLabel();
-        continueButton = new javax.swing.JButton();
+        spotifyAnalysisButton = new javax.swing.JButton();
+        localAnalysisButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -36,11 +37,19 @@ public class Home extends javax.swing.JFrame {
 
         subtitleLabel.setText("A Smart Music Recommender");
 
-        continueButton.setBackground(new java.awt.Color(0, 153, 255));
-        continueButton.setText("Continue");
-        continueButton.addActionListener(new java.awt.event.ActionListener() {
+        spotifyAnalysisButton.setBackground(new java.awt.Color(0, 153, 255));
+        spotifyAnalysisButton.setText("Spotify Analysis");
+        spotifyAnalysisButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                continueButtonActionPerformed(evt);
+                spotifyAnalysisButtonActionPerformed(evt);
+            }
+        });
+
+        localAnalysisButton.setBackground(new java.awt.Color(0, 153, 255));
+        localAnalysisButton.setText("Local Analysis");
+        localAnalysisButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                localAnalysisButtonActionPerformed(evt);
             }
         });
 
@@ -48,19 +57,20 @@ public class Home extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(211, 211, 211)
+                .addComponent(titleLabel)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(0, 180, Short.MAX_VALUE)
+                .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(subtitleLabel)
                 .addGap(174, 174, 174))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(219, 219, 219)
-                        .addComponent(continueButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(211, 211, 211)
-                        .addComponent(titleLabel)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(136, Short.MAX_VALUE)
+                .addComponent(localAnalysisButton, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(spotifyAnalysisButton)
+                .addGap(130, 130, 130))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -69,23 +79,41 @@ public class Home extends javax.swing.JFrame {
                 .addComponent(titleLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(subtitleLabel)
-                .addGap(88, 88, 88)
-                .addComponent(continueButton)
-                .addContainerGap(130, Short.MAX_VALUE))
+                .addGap(90, 90, 90)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(spotifyAnalysisButton)
+                    .addComponent(localAnalysisButton))
+                .addContainerGap(128, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void continueButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_continueButtonActionPerformed
+    /**
+     * Simply moves on to a new Login frame, and disposes of the current Home frame
+     * @param evt
+     */
+    private void spotifyAnalysisButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_spotifyAnalysisButtonActionPerformed
         // TODO add your handling code here:
-        // moving on to the next frame
         this.toBack();
-        this.dispose();
         Login newLogin = new Login();
         newLogin.setVisible(true);
+        this.dispose();
         newLogin.toFront();
-    }//GEN-LAST:event_continueButtonActionPerformed
+    }//GEN-LAST:event_spotifyAnalysisButtonActionPerformed
+    
+    /**
+     * Simply moves on to a new LocalAnalysis frame, and disposes of the current Home frame
+     * @param evt 
+     */
+    private void localAnalysisButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_localAnalysisButtonActionPerformed
+        // TODO add your handling code here:
+        this.toBack();
+        LocalAnalysis newLocal = new LocalAnalysis();
+        newLocal.setVisible(true);
+        this.dispose();
+        newLocal.toFront();
+    }//GEN-LAST:event_localAnalysisButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -123,7 +151,8 @@ public class Home extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton continueButton;
+    private javax.swing.JButton localAnalysisButton;
+    private javax.swing.JButton spotifyAnalysisButton;
     private javax.swing.JLabel subtitleLabel;
     private javax.swing.JLabel titleLabel;
     // End of variables declaration//GEN-END:variables

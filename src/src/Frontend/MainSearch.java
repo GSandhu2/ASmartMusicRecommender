@@ -152,6 +152,10 @@ public class MainSearch extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Simply moves back a frame, to the Login frame. The current Search frame is disposed.
+     * @param evt
+     */
     private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
         this.toBack();
         this.dispose();
@@ -160,6 +164,11 @@ public class MainSearch extends javax.swing.JFrame {
         newLogin.toFront();
     }//GEN-LAST:event_backButtonActionPerformed
 
+    /**
+     * Uses the id variable to analyze however many songs we have set it to
+     * After analyzing the songs and finding matches, update songList within ScrollPanel, and display matches to user ordered by highest match.
+     * @param evt
+     */
     private void suggestButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_suggestButtonActionPerformed
         suggestButton.setText("Working...");
         try {
@@ -185,13 +194,19 @@ public class MainSearch extends javax.swing.JFrame {
                 String matchPercent = percentFormat.format(results.get(i).result);
                 System.out.println(resultURLs[i] + " = " + matchPercent);
             }
+
+            // DefaultListModel object to update the list representing songs
             DefaultListModel lm = new DefaultListModel();
+            // iterate through each url result and append the match percentage
             for (int i = 0; i < resultURLs.length; i++) {
                 String matchPercent = percentFormat.format(results.get(i).result);
                 String combined = resultURLs[i] +  ", " + matchPercent;
+                // add appended string to our DefaultListModel
                 lm.add(i, combined);
             }
+            // set the current ListModel as our updated DefaultListModel
             songList.setModel(lm);
+            // update the frame
             this.revalidate();
             this.repaint();
             
@@ -204,6 +219,10 @@ public class MainSearch extends javax.swing.JFrame {
         
     }//GEN-LAST:event_suggestButtonActionPerformed
 
+    /**
+     * Updates the trackId to the text inputted in idInput field
+     * @param evt
+     */
     private void idInputKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_idInputKeyReleased
         id = idInput.getText();
     }//GEN-LAST:event_idInputKeyReleased

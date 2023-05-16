@@ -114,6 +114,12 @@ public class Login extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Checks if the username input is valid; if it is, then move on to a new MainSearch frame
+     * and dispose of the current Login frame
+     * If username is invalid, let the user know and they can try and input again
+     * @param evt
+     */
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         try {
             SpotifyAPI.setUserId(username);
@@ -129,6 +135,10 @@ public class Login extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_submitButtonActionPerformed
 
+    /**
+     * Simply moves back to a new Home frame, and disposes of the current Login frame
+     * @param evt
+     */
     private void backButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backButtonActionPerformed
         this.toBack();
         this.dispose();
@@ -137,6 +147,10 @@ public class Login extends javax.swing.JFrame {
         newHome.toFront();
     }//GEN-LAST:event_backButtonActionPerformed
 
+    /**
+     * Stores the user input into the userInput label into username
+     * @param evt
+     */
     private void userInputKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_userInputKeyReleased
         System.out.println("username = " + userInput.getText());
         username = userInput.getText();
