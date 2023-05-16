@@ -79,6 +79,7 @@ public class Home extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
+        // moving on to the next frame
         this.toBack();
         this.dispose();
         Login newLogin = new Login();

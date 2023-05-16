@@ -119,6 +119,7 @@ public class Login extends javax.swing.JFrame {
             SpotifyAPI.setUserId(username);
             jLabel3.setVisible(false);
             this.toBack();
+            this.dispose();
             MainSearch newSearch = new MainSearch();
             newSearch.setVisible(true);
             newSearch.toFront();
@@ -130,7 +131,7 @@ public class Login extends javax.swing.JFrame {
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         this.toBack();
-        setVisible(false);
+        this.dispose();
         Home newHome = new Home();
         newHome.setVisible(true);
         newHome.toFront();
